@@ -4,7 +4,7 @@
  * This handles the popup UI when you click the extension icon
  */
 
-import { DEFAULT_SETTINGS, type CatchySettings } from '../types';
+import { type CatchySettings, DEFAULT_SETTINGS } from '../types';
 
 // Get DOM elements
 const toggleCheckbox = document.getElementById('toggle-enabled') as HTMLInputElement;

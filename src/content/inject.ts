@@ -13,7 +13,7 @@
  * 4. Sends captured errors to content script via window.postMessage
  */
 
-(function () {
+(() => {
   console.log('[Catchy Inject] Error catcher initialized');
 
   // Store original console.error so we can still call it
@@ -37,7 +37,7 @@
   /**
    * PATCH 1: Intercept console.error() calls
    */
-  console.error = function (...args: any[]) {
+  console.error = (...args: any[]) => {
     // Build error message from arguments
     const message = args
       .map((arg) => {

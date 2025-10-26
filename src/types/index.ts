@@ -9,41 +9,43 @@
  * Error captured from a web page
  */
 export interface CatchyError {
-  id: string;                  // Unique identifier for this error
-  message: string;             // Error message text
-  stack?: string;              // Stack trace (if available)
-  type: ErrorType;             // What kind of error is this?
-  url: string;                 // URL where the error occurred
-  timestamp: number;           // When it happened (milliseconds since epoch)
-  count: number;               // How many times this error occurred (for grouping)
-  file?: string;               // Source file (e.g., "app.js:123")
-  line?: number;               // Line number
-  column?: number;             // Column number
+  id: string; // Unique identifier for this error
+  message: string; // Error message text
+  stack?: string; // Stack trace (if available)
+  type: ErrorType; // What kind of error is this?
+  url: string; // URL where the error occurred
+  timestamp: number; // When it happened (milliseconds since epoch)
+  count: number; // How many times this error occurred (for grouping)
+  file?: string; // Source file (e.g., "app.js:123")
+  line?: number; // Line number
+  column?: number; // Column number
 }
 
 /**
  * Types of errors we can catch
  */
 export type ErrorType =
-  | 'console.error'           // console.error() calls
-  | 'uncaught'                // Uncaught exceptions (window.onerror)
-  | 'unhandledrejection'      // Unhandled promise rejections
-  | 'resource'                // Failed resource loads (images, scripts, etc.)
-  | 'network';                // Network/fetch errors
+  | 'console.error' // console.error() calls
+  | 'uncaught' // Uncaught exceptions (window.onerror)
+  | 'unhandledrejection' // Unhandled promise rejections
+  | 'resource' // Failed resource loads (images, scripts, etc.)
+  | 'network'; // Network/fetch errors
 
 /**
  * Extension settings saved in chrome.storage
  */
 export interface CatchySettings {
-  enabled: boolean;            // Is extension active globally?
-  perSiteSettings: {           // Per-website settings
+  enabled: boolean; // Is extension active globally?
+  perSiteSettings: {
+    // Per-website settings
     [hostname: string]: {
-      enabled: boolean;        // Is extension active on this site?
+      enabled: boolean; // Is extension active on this site?
     };
   };
 
   // Error filtering
-  errorTypes: {                // Which error types to show
+  errorTypes: {
+    // Which error types to show
     consoleError: boolean;
     uncaught: boolean;
     unhandledRejection: boolean;
@@ -52,19 +54,19 @@ export interface CatchySettings {
   };
 
   // Ignore rules
-  ignoreRules: IgnoreRule[];   // List of rules to filter out errors
+  ignoreRules: IgnoreRule[]; // List of rules to filter out errors
 
   // UI settings
   theme: {
     position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-    maxToasts: number;         // Max toasts to show at once
-    autoCloseMs: number;       // Auto-close after X milliseconds (0 = never)
+    maxToasts: number; // Max toasts to show at once
+    autoCloseMs: number; // Auto-close after X milliseconds (0 = never)
   };
 
   // Rate limiting
   rateLimit: {
-    maxPerInterval: number;    // Max toasts per interval
-    intervalMs: number;        // Interval in milliseconds
+    maxPerInterval: number; // Max toasts per interval
+    intervalMs: number; // Interval in milliseconds
   };
 }
 
@@ -72,12 +74,12 @@ export interface CatchySettings {
  * Rule to ignore/filter certain errors
  */
 export interface IgnoreRule {
-  id: string;                  // Unique identifier
+  id: string; // Unique identifier
   type: 'regex' | 'substring'; // How to match
   scope: 'message' | 'stack' | 'url'; // What to match against
-  pattern: string;             // The pattern to match
-  origin: 'global' | string;   // Apply globally or to specific hostname
-  enabled: boolean;            // Is this rule active?
+  pattern: string; // The pattern to match
+  origin: 'global' | string; // Apply globally or to specific hostname
+  enabled: boolean; // Is this rule active?
 }
 
 /**
@@ -85,10 +87,10 @@ export interface IgnoreRule {
  */
 export type ExtensionMessage =
   | { type: 'ERROR_CAPTURED'; error: CatchyError }
-  | { type: 'GET_SETTINGS'; }
+  | { type: 'GET_SETTINGS' }
   | { type: 'UPDATE_SETTINGS'; settings: Partial<CatchySettings> }
-  | { type: 'TOGGLE_ENABLED'; }
-  | { type: 'CLEAR_ERRORS'; };
+  | { type: 'TOGGLE_ENABLED' }
+  | { type: 'CLEAR_ERRORS' };
 
 /**
  * Default settings for first-time users
