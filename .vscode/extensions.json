@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "bradlc.vscode-tailwindcss",
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    "christian-kohler.path-intellisense",
+    "CodeRabbit.coderabbit-vscode"
+  ],
+  "unwantedRecommendations": ["ms-vscode.vscode-eslint", "esbenp.prettier-vscode"]
+}

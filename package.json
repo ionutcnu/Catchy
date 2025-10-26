@@ -43,6 +43,9 @@
     ],
     "*.{json,md}": [
       "biome format --write"
+    ],
+    ".vscode/*.json": [
+      "biome format --write"
     ]
   }
 }

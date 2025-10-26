@@ -1,0 +1,103 @@
+{
+  // Biome configuration
+  "biome.enabled": true,
+  "biome.lspBin": "./node_modules/@biomejs/biome/bin/biome",
+
+  // Editor settings
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": "explicit",
+    "source.organizeImports.biome": "explicit",
+    "source.fixAll.biome": "explicit"
+  },
+  "editor.defaultFormatter": "biomejs.biome",
+
+  // File associations
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+
+  // TypeScript settings
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.variableTypes.enabled": false,
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+
+  // File explorer settings
+  "explorer.excludeGitIgnore": true,
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.git": true,
+    "**/.DS_Store": true
+  },
+
+  // Search settings
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/*.log": true,
+    "**/bun.lock": true,
+    "**/package-lock.json": true
+  },
+
+  // Error lens settings
+  "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+  "errorLens.followCursor": "allLines",
+
+  // Emmet settings for JSX
+  "emmet.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html"
+  },
+
+  // Auto-save and file watching
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+
+  // Git settings
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+
+  // Terminal settings
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.linux": "bash",
+
+  // Chrome extension specific
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "html.autoClosingTags": true,
+  "css.validate": true,
+
+  // Disable conflicting extensions
+  "eslint.enable": false,
+  "prettier.enable": false,
+
+  // Spell checker
+  "cSpell.words": ["biome", "catchy", "vite", "tsconfig", "biomejs"]
+}
