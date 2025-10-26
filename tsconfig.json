@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ES2020",                  /* Modern JavaScript features */
+    "lib": ["ES2020", "DOM"],            /* Include DOM APIs for browser */
+
+    /* Modules */
+    "module": "ESNext",                  /* Use modern ES modules */
+    "moduleResolution": "bundler",       /* For Vite bundler */
+    "resolveJsonModule": true,           /* Allow importing JSON files */
+
+    /* Emit */
+    "outDir": "./dist",                  /* Output directory for compiled files */
+    "noEmit": true,                      /* Let Vite handle the output */
+
+    /* Interop Constraints */
+    "esModuleInterop": true,             /* Enable CommonJS/ES module interop */
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Type Checking */
+    "strict": true,                      /* Enable all strict type-checking */
+    "noUnusedLocals": true,              /* Error on unused local variables */
+    "noUnusedParameters": true,          /* Error on unused parameters */
+    "noFallthroughCasesInSwitch": true,  /* Error on switch fallthrough */
+    "noImplicitReturns": true,           /* Error when function doesn't return */
+
+    /* Completeness */
+    "skipLibCheck": true,                /* Skip type checking of .d.ts files */
+
+    /* Chrome Extension Types */
+    "types": ["chrome", "node"]          /* Include Chrome API types */
+  },
+  "include": [
+    "src/**/*"                           /* Include all TypeScript files in src/ */
+  ],
+  "exclude": [
+    "node_modules",                      /* Exclude dependencies */
+    "dist"                               /* Exclude build output */
+  ]
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catchy</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="popup-container">
+      <header>
+        <h1>🎯 Catchy</h1>
+        <p>Console Error Toaster</p>
+      </header>
+
+      <main>
+        <!-- Toggle Switch -->
+        <div class="control-group">
+          <label class="toggle-label">
+            <span>Enable Error Catching</span>
+            <input type="checkbox" id="toggle-enabled" />
+            <span class="toggle-switch"></span>
+          </label>
+        </div>
+
+        <!-- Status Display -->
+        <div class="status" id="status">
+          <span class="status-dot"></span>
+          <span class="status-text">Loading...</span>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions">
+          <button id="open-options" class="button secondary">
+            ⚙️ Settings
+          </button>
+        </div>
+      </main>
+
+      <footer>
+        <small>v0.1.0</small>
+      </footer>
+    </div>
+
+    <!-- Load TypeScript - Vite will compile it -->
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>
