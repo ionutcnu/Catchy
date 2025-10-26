@@ -11,7 +11,7 @@
  * They "wake up" when an event happens, do their work, then go to sleep.
  */
 
-import { DEFAULT_SETTINGS, type CatchySettings } from '../types';
+import { type CatchySettings, DEFAULT_SETTINGS } from '../types';
 
 console.log('[Catchy Background] Service worker started');
 

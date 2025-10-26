@@ -20,7 +20,7 @@ console.log('[Catchy Content] Content script loaded');
 function injectScript() {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('content/inject.js');
-  script.onload = function () {
+  script.onload = () => {
     // Remove script tag after it executes (cleanup)
     script.remove();
   };
