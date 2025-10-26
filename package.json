@@ -8,12 +8,11 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "biome lint src",
-    "lint:fix": "biome lint --apply src",
+    "lint:fix": "biome lint --write src",
     "format": "biome format --write src",
     "check": "biome check src",
-    "check:fix": "biome check --apply src",
-    "type-check": "tsc --noEmit",
-    "prepare": "husky"
+    "check:fix": "biome check --write src",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "chrome-extension",
@@ -28,24 +27,12 @@
     "@types/chrome": "^0.0.268",
     "@types/node": "^20.12.7",
     "@vitejs/plugin-react": "^4.2.1",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.6",
     "typescript": "^5.4.5",
     "vite": "^5.2.10",
+    "vite-plugin-biome": "^1.0.12",
     "vite-plugin-static-copy": "^1.0.4"
   },
   "dependencies": {
     "@nova-mcp/mcp-nova": "^0.3.0"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "biome check --write"
-    ],
-    "*.{json,md}": [
-      "biome format --write"
-    ],
-    ".vscode/*.json": [
-      "biome format --write"
-    ]
   }
 }

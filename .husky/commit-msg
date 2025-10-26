@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# Optional: Add commit message validation here
-# Example: bunx commitlint --edit $1
