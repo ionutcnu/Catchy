@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --mode development --watch",
+    "dev:playground": "node scripts/dev-playground.js",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "biome lint src",
@@ -12,7 +13,8 @@
     "format": "biome format --write src",
     "check": "biome check src",
     "check:fix": "biome check --write src",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "postinstall": "npx puppeteer browsers install chrome || echo 'Puppeteer browser installation failed - you can install manually or use system Chrome'"
   },
   "keywords": [
     "chrome-extension",
@@ -27,6 +29,7 @@
     "@types/chrome": "^0.0.268",
     "@types/node": "^20.12.7",
     "@vitejs/plugin-react": "^4.2.1",
+    "puppeteer": "^24.26.1",
     "typescript": "^5.4.5",
     "vite": "^5.2.10",
     "vite-plugin-biome": "^1.0.12",
