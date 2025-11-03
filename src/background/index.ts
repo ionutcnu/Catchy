@@ -11,9 +11,9 @@
  * They "wake up" when an event happens, do their work, then go to sleep.
  */
 
-import { type CatchySettings, DEFAULT_SETTINGS } from '../types';
-
 console.log('[Catchy Background] Service worker started');
+
+const DEFAULT_SETTINGS = { enabled: true };
 
 /**
  * When extension is first installed or updated
@@ -44,7 +44,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'GET_SETTINGS') {
     // Content script is asking for settings
     chrome.storage.sync.get(['settings'], (result) => {
-      const settings: CatchySettings = result.settings || DEFAULT_SETTINGS;
+      const settings = result.settings || DEFAULT_SETTINGS;
       sendResponse({ settings });
     });
     return true; // Keep channel open for async response
@@ -53,7 +53,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'UPDATE_SETTINGS') {
     // Popup/options page is updating settings
     chrome.storage.sync.get(['settings'], (result) => {
-      const currentSettings: CatchySettings = result.settings || DEFAULT_SETTINGS;
+      const currentSettings = result.settings || DEFAULT_SETTINGS;
       const updatedSettings = { ...currentSettings, ...message.settings };
 
       chrome.storage.sync.set({ settings: updatedSettings }, () => {
@@ -66,7 +66,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'TOGGLE_ENABLED') {
     // Toggle extension on/off
     chrome.storage.sync.get(['settings'], (result) => {
-      const settings: CatchySettings = result.settings || DEFAULT_SETTINGS;
+      const settings = result.settings || DEFAULT_SETTINGS;
       settings.enabled = !settings.enabled;
 
       chrome.storage.sync.set({ settings }, () => {
@@ -88,7 +88,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
  */
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'sync' && changes.settings) {
-    const settings: CatchySettings = changes.settings.newValue;
+    const settings = changes.settings.newValue;
 
     // Update badge based on enabled state
     chrome.action.setBadgeText({

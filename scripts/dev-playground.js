@@ -41,7 +41,7 @@ async function ensureChromiumInstalled() {
 
       return new Promise((resolve, reject) => {
         const installProcess = spawn(
-          "npx",
+          "bunx",
           ["puppeteer", "browsers", "install", "chrome"],
           {
             cwd: projectRoot,
@@ -95,7 +95,7 @@ function buildExtension() {
   return new Promise((resolve, reject) => {
     console.log("🔨 Building extension...");
 
-    const buildProcess = spawn("npm", ["run", "build"], {
+    const buildProcess = spawn("bun", ["run", "build"], {
       cwd: projectRoot,
       stdio: "inherit",
     });
@@ -116,7 +116,7 @@ function buildExtension() {
 function startWatcher() {
   console.log("👀 Starting development watcher...");
 
-  const watchProcess = spawn("npm", ["run", "dev"], {
+  const watchProcess = spawn("bun", ["run", "dev"], {
     cwd: projectRoot,
     stdio: "pipe",
   });
@@ -204,7 +204,7 @@ async function launchChromium() {
     console.error("❌ Failed to launch Chromium:", error.message);
 
     if (error.message.includes("Could not find Chrome")) {
-      console.log("\n💡 Try running: npx puppeteer browsers install chrome");
+      console.log("\n💡 Try running: bunx puppeteer browsers install chrome");
       console.log("Or check if the installation completed successfully.");
     }
 
@@ -322,9 +322,9 @@ async function main() {
   } catch (error) {
     console.error("❌ Failed to start development environment:", error.message);
 
-    if (error.message.includes("ENOENT") && error.message.includes("npm")) {
+    if (error.message.includes("ENOENT") && error.message.includes("bun")) {
       console.log(
-        "\n💡 Make sure you have npm installed and available in your PATH",
+        "\n💡 Make sure you have bun installed and available in your PATH",
       );
     }
 
