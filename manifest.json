@@ -32,13 +32,14 @@
       "matches": ["<all_urls>"],
       "js": ["content/index.js"],
       "run_at": "document_start",
-      "all_frames": false
+      "all_frames": false,
+      "type": "module"
     }
   ],
 
   "web_accessible_resources": [
     {
-      "resources": ["content/inject.js"],
+      "resources": ["content/inject.js", "assets/*.js"],
       "matches": ["<all_urls>"]
     }
   ],

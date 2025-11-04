@@ -23,7 +23,7 @@
    * Send error to content script
    * We use postMessage because inject script can't use chrome.runtime directly
    */
-  function sendError(error: any) {
+  function sendError(error: unknown) {
     window.postMessage(
       {
         source: 'catchy-inject',
@@ -37,7 +37,7 @@
   /**
    * PATCH 1: Intercept console.error() calls
    */
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     // Build error message from arguments
     const message = args
       .map((arg) => {

@@ -14,12 +14,39 @@
 console.log('[Catchy Content] Content script loaded');
 
 /**
+ * Cache the extension's enabled state for quick checks
+ * This prevents us from querying storage on every error
+ */
+let isExtensionEnabled = true; // Default to true until we load settings
+
+/**
+ * Load settings from Chrome storage and update our cache
+ * This runs once when the content script first loads
+ */
+async function loadSettings() {
+  try {
+    const result = await chrome.storage.sync.get(['settings']);
+    const settings = result.settings || { enabled: true };
+
+    // Update our cached state
+    isExtensionEnabled = settings.enabled;
+
+    console.log('[Catchy Content] Settings loaded, enabled:', isExtensionEnabled);
+  } catch (error) {
+    console.error('[Catchy Content] Failed to load settings:', error);
+    // On error, default to enabled
+    isExtensionEnabled = true;
+  }
+}
+
+/**
  * Step 1: Inject the error catcher into the page
  * We create a <script> tag that loads inject.js
  */
 function injectScript() {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('content/inject.js');
+  // Note: inject.js is built as IIFE, not a module, so no type="module"
   script.onload = () => {
     // Remove script tag after it executes (cleanup)
     script.remove();
@@ -43,6 +70,12 @@ window.addEventListener('message', (event) => {
 
   // Handle the error
   if (event.data.type === 'ERROR_CAPTURED') {
+    // ⚡ FIX: Check if extension is enabled before showing toast
+    if (!isExtensionEnabled) {
+      console.log('[Catchy Content] Extension disabled, ignoring error');
+      return;
+    }
+
     showToast(event.data.error);
   }
 });
@@ -52,7 +85,13 @@ window.addEventListener('message', (event) => {
  * For now, this is a simple implementation
  * Later, we'll create a proper Shadow DOM toast component
  */
-function showToast(error: any) {
+function showToast(error: {
+  type: string;
+  message: string;
+  file?: string;
+  line?: number;
+  column?: number;
+}) {
   // Create a simple toast div
   const toast = document.createElement('div');
   toast.style.cssText = `
@@ -112,5 +151,22 @@ function showToast(error: any) {
   console.log('[Catchy Content] Toast displayed');
 }
 
-// Inject the script as soon as possible
+/**
+ * Listen for settings changes in Chrome storage
+ * When user toggles extension on/off, this updates our cache immediately
+ */
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'sync' && changes.settings) {
+    const newSettings = changes.settings.newValue;
+
+    // Update our cached state
+    const wasEnabled = isExtensionEnabled;
+    isExtensionEnabled = newSettings.enabled;
+
+    console.log('[Catchy Content] Settings changed: enabled', wasEnabled, '->', isExtensionEnabled);
+  }
+});
+
+// Load settings and inject the script as soon as possible
+loadSettings();
 injectScript();
