@@ -64,7 +64,7 @@ export class Toast {
     const closeButton = document.createElement('button');
     closeButton.className = 'catchy-toast-close';
     closeButton.setAttribute('aria-label', 'Close notification');
-    closeButton.innerHTML = '&times;';
+    closeButton.textContent = '×';
     closeButton.addEventListener('click', () => this.close());
     header.appendChild(closeButton);
 

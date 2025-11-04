@@ -425,11 +425,11 @@ export class ToastManager {
    * Set toast position
    */
   public setPosition(position: ToastPosition): void {
-    console.log('[Catchy ToastManager] setPosition called with:', position);
-    console.log('[Catchy ToastManager] Previous position:', this.position);
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Position changed:', this.position, '→', position);
+    }
     this.position = position;
     this.updateContainerPosition();
-    console.log('[Catchy ToastManager] Position updated. Container classes:', this.container?.className);
   }
 
   /**
@@ -448,9 +448,6 @@ export class ToastManager {
       return;
     }
 
-    console.log('[Catchy ToastManager] Updating container position to:', this.position);
-    console.log('[Catchy ToastManager] Classes before update:', this.container.className);
-
     // Remove all position classes
     this.container.classList.remove(
       'position-bottom-right',
@@ -461,8 +458,6 @@ export class ToastManager {
 
     // Add current position class
     this.container.classList.add(`position-${this.position}`);
-
-    console.log('[Catchy ToastManager] Classes after update:', this.container.className);
   }
 
   /**

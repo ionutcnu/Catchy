@@ -1,30 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { CatchySettings } from '@/types';
+import { type CatchySettings, DEFAULT_SETTINGS } from '@/types';
 
 type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-
-const DEFAULT_SETTINGS: CatchySettings = {
-  enabled: true,
-  perSiteSettings: {},
-  errorTypes: {
-    consoleError: true,
-    uncaught: true,
-    unhandledRejection: true,
-    resource: true,
-    network: true,
-  },
-  ignoreRules: [],
-  theme: {
-    position: 'bottom-right',
-    maxToasts: 5,
-    autoCloseMs: 5000,
-  },
-  rateLimit: {
-    maxPerInterval: 10,
-    intervalMs: 60000,
-  },
-};
 
 export default function OptionsApp() {
   const [settings, setSettings] = useState<CatchySettings>(DEFAULT_SETTINGS);
