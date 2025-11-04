@@ -3,7 +3,7 @@
 interface ImportMetaEnv {
   readonly DEV: boolean;
   readonly PROD: boolean;
-  readonly MODE: string;
+  readonly MODE: 'development' | 'production';
 }
 
 interface ImportMeta {

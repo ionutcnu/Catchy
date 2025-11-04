@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { type CatchySettings, DEFAULT_SETTINGS } from '@/types';
 
+const manifest = chrome.runtime.getManifest();
+
 const CONSTANTS = {
   APP_TITLE: '🎯 Catchy',
   APP_SUBTITLE: 'Console Error Tracker',
@@ -13,7 +15,7 @@ const CONSTANTS = {
   STATUS_ACTIVE: 'Active - catching errors',
   STATUS_DISABLED: 'Disabled',
   BUTTON_SETTINGS: 'Settings',
-  VERSION: 'v0.1.0',
+  VERSION: `v${manifest.version}`,
 } as const;
 
 export default function PopupApp() {
