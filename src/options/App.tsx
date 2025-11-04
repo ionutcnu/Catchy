@@ -107,7 +107,7 @@ export default function OptionsApp() {
                       }`}
                     >
                       <div className="text-sm font-medium capitalize">
-                        {position.replace('-', ' ')}
+                        {position.replace(/-/g, ' ')}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
                         {position === 'top-left' && 'Top left corner'}

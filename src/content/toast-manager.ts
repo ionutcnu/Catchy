@@ -395,10 +395,6 @@ export class ToastManager {
     const toast = this.toasts.get(id);
     if (toast) {
       toast.close();
-      // Update close-all button visibility after toast closes
-      setTimeout(() => {
-        this.updateCloseAllButton();
-      }, 300); // Wait for close animation
     }
   }
 
