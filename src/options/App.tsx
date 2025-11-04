@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { type CatchySettings, DEFAULT_SETTINGS } from '@/types';
-
-type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+import { type CatchySettings, DEFAULT_SETTINGS, type ToastPosition } from '@/types';
 
 export default function OptionsApp() {
   const [settings, setSettings] = useState<CatchySettings>(DEFAULT_SETTINGS);
@@ -12,7 +10,24 @@ export default function OptionsApp() {
   useEffect(() => {
     chrome.storage.sync.get(['settings'], (result) => {
       if (result.settings) {
-        setSettings(result.settings);
+        // Deep merge with defaults to handle legacy settings missing new fields
+        const mergedSettings: CatchySettings = {
+          ...DEFAULT_SETTINGS,
+          ...result.settings,
+          theme: {
+            ...DEFAULT_SETTINGS.theme,
+            ...result.settings.theme,
+          },
+          errorTypes: {
+            ...DEFAULT_SETTINGS.errorTypes,
+            ...result.settings.errorTypes,
+          },
+          rateLimit: {
+            ...DEFAULT_SETTINGS.rateLimit,
+            ...result.settings.rateLimit,
+          },
+        };
+        setSettings(mergedSettings);
       }
     });
   }, []);

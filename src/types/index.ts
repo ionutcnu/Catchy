@@ -32,6 +32,11 @@ export type ErrorType =
   | 'network'; // Network/fetch errors
 
 /**
+ * Toast notification position on screen
+ */
+export type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+
+/**
  * Extension settings saved in chrome.storage
  */
 export interface CatchySettings {

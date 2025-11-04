@@ -6,8 +6,7 @@
  */
 
 import { Toast, type ToastData, type ToastOptions } from './components/Toast';
-
-export type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+import type { ToastPosition } from '@/types';
 
 export class ToastManager {
   private shadowRoot: ShadowRoot | null = null;
