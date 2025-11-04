@@ -1,6 +1,63 @@
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { CatchySettings } from '@/types';
+
+type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+
+const DEFAULT_SETTINGS: CatchySettings = {
+  enabled: true,
+  perSiteSettings: {},
+  errorTypes: {
+    consoleError: true,
+    uncaught: true,
+    unhandledRejection: true,
+    resource: true,
+    network: true,
+  },
+  ignoreRules: [],
+  theme: {
+    position: 'bottom-right',
+    maxToasts: 5,
+    autoCloseMs: 5000,
+  },
+  rateLimit: {
+    maxPerInterval: 10,
+    intervalMs: 60000,
+  },
+};
 
 export default function OptionsApp() {
+  const [settings, setSettings] = useState<CatchySettings>(DEFAULT_SETTINGS);
+  const [saved, setSaved] = useState(false);
+
+  // Load settings on mount
+  useEffect(() => {
+    chrome.storage.sync.get(['settings'], (result) => {
+      if (result.settings) {
+        setSettings(result.settings);
+      }
+    });
+  }, []);
+
+  // Save settings to Chrome storage
+  const saveSettings = (newSettings: CatchySettings) => {
+    setSettings(newSettings);
+    chrome.storage.sync.set({ settings: newSettings }, () => {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    });
+  };
+
+  const handlePositionChange = (position: ToastPosition) => {
+    saveSettings({
+      ...settings,
+      theme: {
+        ...settings.theme,
+        position,
+      },
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto py-12 px-4">
@@ -10,14 +67,59 @@ export default function OptionsApp() {
           <p className="text-muted-foreground">Configure your error catching preferences</p>
         </div>
 
+        {/* Save indicator */}
+        {saved && (
+          <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg">
+            Settings saved!
+          </div>
+        )}
+
         {/* Main Content */}
         <div className="space-y-6">
+          {/* Toast Position Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Toast Position</CardTitle>
+              <CardDescription>
+                Choose where error notifications appear on your screen
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                {(['top-left', 'top-right', 'bottom-left', 'bottom-right'] as ToastPosition[]).map(
+                  (position) => (
+                    <button
+                      key={position}
+                      type="button"
+                      onClick={() => handlePositionChange(position)}
+                      className={`p-6 rounded-lg border-2 transition-all ${
+                        settings.theme.position === position
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="text-sm font-medium capitalize">
+                        {position.replace('-', ' ')}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {position === 'top-left' && 'Top left corner'}
+                        {position === 'top-right' && 'Top right corner'}
+                        {position === 'bottom-left' && 'Bottom left corner'}
+                        {position === 'bottom-right' && 'Bottom right corner (default)'}
+                      </div>
+                    </button>
+                  )
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Coming Soon!</CardTitle>
               <CardDescription>
-                Full settings page is under construction. For now, you can toggle Catchy on/off from
-                the popup.
+                More settings are under construction. For now, you can toggle Catchy on/off from the
+                popup.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -29,7 +131,7 @@ export default function OptionsApp() {
                     <li>Per-site settings and configurations</li>
                     <li>Theme customization (dark mode, accent colors)</li>
                     <li>Export and import settings</li>
-                    <li>Toast notification positioning and styling</li>
+                    <li>Max toasts and auto-close timing</li>
                     <li>Error log history and filtering</li>
                   </ul>
                 </div>
