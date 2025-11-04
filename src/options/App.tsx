@@ -5,6 +5,7 @@ import { type CatchySettings, DEFAULT_SETTINGS, type ToastPosition } from '@/typ
 export default function OptionsApp() {
   const [settings, setSettings] = useState<CatchySettings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Load settings on mount
   useEffect(() => {
@@ -35,7 +36,14 @@ export default function OptionsApp() {
   // Save settings to Chrome storage
   const saveSettings = (newSettings: CatchySettings) => {
     setSettings(newSettings);
+    setSaveError(null); // Clear any previous errors
     chrome.storage.sync.set({ settings: newSettings }, () => {
+      if (chrome.runtime.lastError) {
+        console.error('[Catchy Options] Failed to save settings:', chrome.runtime.lastError);
+        setSaveError(chrome.runtime.lastError.message || 'Failed to save settings');
+        setTimeout(() => setSaveError(null), 3000);
+        return;
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -64,6 +72,13 @@ export default function OptionsApp() {
         {saved && (
           <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg">
             Settings saved!
+          </div>
+        )}
+
+        {/* Error indicator */}
+        {saveError && (
+          <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg">
+            {saveError}
           </div>
         )}
 

@@ -361,6 +361,8 @@ export class ToastManager {
       ...options,
       onClose: (closedId) => {
         this.toasts.delete(closedId);
+        // Update close-all button visibility after toast removal
+        this.updateCloseAllButton();
         options?.onClose?.(closedId);
       },
     });
