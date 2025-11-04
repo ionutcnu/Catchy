@@ -1,44 +1,73 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
 import { type CatchySettings, DEFAULT_SETTINGS } from '@/types';
+
+const CONSTANTS = {
+  APP_TITLE: '🎯 Catchy',
+  APP_SUBTITLE: 'Console Error Tracker',
+  TOGGLE_LABEL: 'Error Catching',
+  TOGGLE_DESCRIPTION: 'Capture and display console errors',
+  STATUS_LOADING: 'Loading...',
+  STATUS_ACTIVE: 'Active - catching errors',
+  STATUS_DISABLED: 'Disabled',
+  BUTTON_SETTINGS: 'Settings',
+  VERSION: 'v0.1.0',
+} as const;
 
 export default function PopupApp() {
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Load settings on mount
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  async function loadSettings() {
+  const loadSettings = useCallback(async () => {
     try {
-      const result = await chrome.storage.sync.get(['settings']);
+      const result = (await chrome.storage.sync.get(['settings'])) as { settings?: CatchySettings };
       const settings: CatchySettings = result.settings || DEFAULT_SETTINGS;
       setEnabled(settings.enabled);
-      console.log('[Catchy Popup] Settings loaded:', settings);
+      if (import.meta.env.DEV) {
+        console.log('[Catchy Popup] Settings loaded:', settings);
+      }
     } catch (error) {
-      console.error('[Catchy Popup] Failed to load settings:', error);
+      if (import.meta.env.DEV) {
+        console.error('[Catchy Popup] Failed to load settings:', error);
+      }
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  // Load settings on mount
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   async function handleToggle(checked: boolean) {
     setEnabled(checked);
 
     try {
       // Send message to background to update settings
-      chrome.runtime.sendMessage({ type: 'TOGGLE_ENABLED' }, (response) => {
-        if (response) {
-          setEnabled(response.enabled);
-          console.log('[Catchy Popup] Toggled:', response.enabled);
+      chrome.runtime.sendMessage(
+        { type: 'TOGGLE_ENABLED' },
+        (response: { enabled: boolean } | undefined) => {
+          if (chrome.runtime.lastError) {
+            if (import.meta.env.DEV) {
+              console.error('[Catchy Popup] Message error:', chrome.runtime.lastError);
+            }
+            return;
+          }
+          if (response) {
+            setEnabled(response.enabled);
+            if (import.meta.env.DEV) {
+              console.log('[Catchy Popup] Toggled:', response.enabled);
+            }
+          }
         }
-      });
+      );
     } catch (error) {
-      console.error('[Catchy Popup] Failed to toggle:', error);
+      if (import.meta.env.DEV) {
+        console.error('[Catchy Popup] Failed to toggle:', error);
+      }
     }
   }
 
@@ -51,8 +80,8 @@ export default function PopupApp() {
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="text-center border-b pb-4">
-          <h1 className="text-2xl font-bold mb-1">🎯 Catchy</h1>
-          <p className="text-sm text-muted-foreground">Console Error Tracker</p>
+          <h1 className="text-2xl font-bold mb-1">{CONSTANTS.APP_TITLE}</h1>
+          <p className="text-sm text-muted-foreground">{CONSTANTS.APP_SUBTITLE}</p>
         </div>
 
         {/* Main Card */}
@@ -61,12 +90,20 @@ export default function PopupApp() {
             {/* Toggle Control */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Error Catching
+                <label
+                  htmlFor="error-catching-switch"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {CONSTANTS.TOGGLE_LABEL}
                 </label>
-                <p className="text-xs text-muted-foreground">Capture and display console errors</p>
+                <p className="text-xs text-muted-foreground">{CONSTANTS.TOGGLE_DESCRIPTION}</p>
               </div>
-              <Switch checked={enabled} onCheckedChange={handleToggle} disabled={loading} />
+              <Switch
+                id="error-catching-switch"
+                checked={enabled}
+                onCheckedChange={handleToggle}
+                disabled={loading}
+              />
             </div>
 
             {/* Status Indicator */}
@@ -82,14 +119,25 @@ export default function PopupApp() {
                 />
               </div>
               <span className="text-sm font-medium">
-                {loading ? 'Loading...' : enabled ? 'Active - catching errors' : 'Disabled'}
+                {loading
+                  ? CONSTANTS.STATUS_LOADING
+                  : enabled
+                    ? CONSTANTS.STATUS_ACTIVE
+                    : CONSTANTS.STATUS_DISABLED}
               </span>
             </div>
 
             {/* Actions */}
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleOpenOptions}>
-                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="mr-2 h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-label="Settings icon"
+                >
+                  <title>Settings icon</title>
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -103,7 +151,7 @@ export default function PopupApp() {
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                Settings
+                {CONSTANTS.BUTTON_SETTINGS}
               </Button>
             </div>
           </div>
@@ -111,7 +159,7 @@ export default function PopupApp() {
 
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground border-t pt-4">
-          <span>v0.1.0</span>
+          <span>{CONSTANTS.VERSION}</span>
         </div>
       </div>
     </div>
