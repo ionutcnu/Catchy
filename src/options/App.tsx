@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type CatchySettings, DEFAULT_SETTINGS, type ToastPosition } from '@/types';
 
@@ -7,6 +7,7 @@ export default function OptionsApp() {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const saveIdRef = useRef(0); // Track save attempts to prevent race conditions
 
   // Load settings and theme preference on mount
   useEffect(() => {
@@ -45,20 +46,36 @@ export default function OptionsApp() {
   // Save settings to Chrome storage
   const saveSettings = (newSettings: CatchySettings) => {
     const previousSettings = settings; // Preserve for rollback on error
+    const currentSaveId = ++saveIdRef.current; // Increment save ID for this attempt
+
     setSettings(newSettings); // Optimistically update UI
+
     chrome.storage.sync.set({ settings: newSettings }, () => {
       if (chrome.runtime.lastError) {
         console.error('[Catchy Options] Failed to save settings:', chrome.runtime.lastError);
-        // Rollback UI to previous settings
-        setSettings(previousSettings);
-        setSaveError(chrome.runtime.lastError.message || 'Failed to save settings');
-        setTimeout(() => setSaveError(null), 3000);
+
+        // Only rollback if this is still the latest save attempt
+        // If user made another change after this save started, don't clobber it
+        setSettings((currentSettings) => {
+          // Check if current state matches the failed save payload
+          if (JSON.stringify(currentSettings) === JSON.stringify(newSettings)) {
+            // Safe to rollback - no newer save has succeeded
+            setSaveError(chrome.runtime.lastError?.message || 'Failed to save settings');
+            setTimeout(() => setSaveError(null), 3000);
+            return previousSettings;
+          }
+          // Current state is different - a newer save succeeded, don't rollback
+          return currentSettings;
+        });
         return;
       }
-      // Only show success indicator if save actually succeeded
-      setSaveError(null); // Clear any previous errors only on success
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+
+      // Only show success indicator if this save is still relevant
+      if (currentSaveId === saveIdRef.current) {
+        setSaveError(null); // Clear any previous errors only on success
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
     });
   };
 
