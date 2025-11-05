@@ -63,9 +63,11 @@ export interface CatchySettings {
 
   // UI settings
   theme: {
-    position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+    position: ToastPosition;
     maxToasts: number; // Max toasts to show at once
     autoCloseMs: number; // Auto-close after X milliseconds (0 = never)
+    swipeToDismiss: boolean; // Enable swipe-to-dismiss gesture
+    persistPinnedToasts: boolean; // Persist pinned toasts across page refreshes
   };
 
   // Rate limiting
@@ -115,6 +117,8 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     position: 'bottom-right',
     maxToasts: 5,
     autoCloseMs: 0,
+    swipeToDismiss: true,
+    persistPinnedToasts: false,
   },
   rateLimit: {
     maxPerInterval: 5,
