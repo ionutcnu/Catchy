@@ -16,6 +16,9 @@ export class ToastManager {
   private nextId = 0;
   private readonly MAX_TOASTS = 5; // Maximum number of visible toasts
   private position: ToastPosition = 'bottom-right'; // Default position
+  private swipeToDismiss = true; // Default swipe-to-dismiss enabled
+  private persistPinnedToasts = false; // Default persist pinned toasts disabled
+  private readonly STORAGE_KEY_PREFIX = 'catchy-pinned-toasts-'; // LocalStorage key prefix
 
   /**
    * Initialize the Shadow DOM and inject styles
@@ -65,6 +68,13 @@ export class ToastManager {
 
     // Add to page
     document.body.appendChild(host);
+
+    // Save pinned toasts before page unload
+    window.addEventListener('beforeunload', () => {
+      if (this.persistPinnedToasts) {
+        this.savePinnedToasts();
+      }
+    });
 
     if (import.meta.env.DEV) {
       console.log('[Catchy ToastManager] Initialized with Shadow DOM');
@@ -154,11 +164,22 @@ export class ToastManager {
         font-size: var(--catchy-font-size);
         line-height: var(--catchy-line-height);
         pointer-events: auto;
+        cursor: default;
 
         /* Animation setup - default right side */
         opacity: 0;
         transform: translateX(100%);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Draggable cursor - only when swipe-to-dismiss is enabled */
+      .catchy-toast.catchy-toast-draggable {
+        cursor: grab;
+      }
+
+      /* Dragging cursor - only when actually dragging */
+      .catchy-toast.catchy-toast-draggable:active:not(.catchy-toast-message):not(.catchy-toast-location) {
+        cursor: grabbing;
       }
 
       /* Left-side animations */
@@ -224,18 +245,58 @@ export class ToastManager {
         opacity: 0.9;
       }
 
-      /* Close Button */
-      .catchy-toast-close {
+      /* Counter Badge */
+      .catchy-toast-counter {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.4);
+        color: var(--catchy-text);
+        font-weight: 700;
+        font-size: 14px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        margin-left: 8px;
+        line-height: 1;
+        min-width: 28px;
+        text-align: center;
+      }
+
+      /* Counter pulse animation */
+      @keyframes catchy-counter-pulse {
+        0% {
+          transform: scale(1);
+          background: rgba(255, 255, 255, 0.3);
+        }
+        50% {
+          transform: scale(1.2);
+          background: rgba(255, 255, 255, 0.6);
+        }
+        100% {
+          transform: scale(1);
+          background: rgba(255, 255, 255, 0.3);
+        }
+      }
+
+      .catchy-toast-counter-pulse {
+        animation: catchy-counter-pulse 0.4s ease-out;
+      }
+
+      /* Button Container */
+      .catchy-toast-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      /* Pin Button */
+      .catchy-toast-pin {
         background: none;
         border: none;
         color: var(--catchy-text);
-        font-size: 24px;
-        line-height: 1;
         padding: 0;
         margin: 0;
         cursor: pointer;
         opacity: 0.7;
-        transition: opacity 0.2s;
+        transition: opacity 0.2s, transform 0.2s;
         width: 24px;
         height: 24px;
         display: flex;
@@ -243,8 +304,42 @@ export class ToastManager {
         justify-content: center;
       }
 
+      .catchy-toast-pin:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      .catchy-toast-pinned .catchy-toast-pin {
+        opacity: 1;
+      }
+
+      /* Close Button */
+      .catchy-toast-close {
+        background: none;
+        border: none;
+        color: var(--catchy-text);
+        font-size: 28px;
+        line-height: 1;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s, transform 0.2s;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       .catchy-toast-close:hover {
         opacity: 1;
+        transform: scale(1.1);
+      }
+
+      /* Pinned state visual indicator */
+      .catchy-toast-pinned {
+        border-left: 3px solid rgba(255, 255, 255, 0.5);
       }
 
       /* Message */
@@ -262,6 +357,9 @@ export class ToastManager {
         opacity: 0.8;
         font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
         margin-bottom: 4px;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        max-width: 100%;
       }
 
       /* Timestamp */
@@ -333,37 +431,75 @@ export class ToastManager {
   }
 
   /**
+   * Generate a unique key for error deduplication
+   * Errors are considered the same if they have the same message, file, and line
+   */
+  private getErrorKey(data: Omit<ToastData, 'id'> | ToastData): string {
+    return `${data.type}:${data.message}:${data.file || 'unknown'}:${data.line || 0}`;
+  }
+
+  /**
    * Show a new toast notification
    */
-  public showToast(data: Omit<ToastData, 'id'>, options?: ToastOptions): string {
+  public showToast(data: Omit<ToastData, 'id'> | ToastData, options?: ToastOptions): string {
     if (!this.container) {
       console.error('[Catchy ToastManager] Not initialized');
       return '';
     }
 
-    // Check if we've reached max toasts limit
-    if (this.toasts.size >= this.MAX_TOASTS) {
-      // Remove the oldest toast (first one in the map)
-      const oldestId = this.toasts.keys().next().value;
-      if (oldestId) {
-        this.closeToast(oldestId);
+    // Check for duplicate errors
+    const errorKey = this.getErrorKey(data);
+    for (const [existingId, existingToast] of this.toasts) {
+      const existingData = existingToast.getData();
+      const existingKey = this.getErrorKey(existingData);
+
+      if (errorKey === existingKey) {
+        // Found duplicate - increment counter instead of creating new toast
+        existingToast.incrementCounter();
+        if (import.meta.env.DEV) {
+          console.log('[Catchy ToastManager] Duplicate error, incrementing counter for:', existingId);
+        }
+        return existingId;
       }
     }
 
-    // Generate unique ID
-    const id = `toast-${++this.nextId}-${Date.now()}`;
+    // Count unpinned toasts only
+    const unpinnedCount = Array.from(this.toasts.values()).filter(t => !t.getData().isPinned).length;
 
-    // Create toast data with ID
-    const toastData: ToastData = { ...data, id };
+    // Check if we've reached max UNPINNED toasts limit
+    if (unpinnedCount >= this.MAX_TOASTS) {
+      // Remove the oldest UNPINNED toast
+      for (const [toastId, toast] of this.toasts) {
+        if (!toast.getData().isPinned) {
+          this.closeToast(toastId);
+          break;
+        }
+      }
+    }
+
+    // Generate unique ID if not provided (for restored toasts)
+    const id = 'id' in data && data.id ? data.id : `toast-${++this.nextId}-${Date.now()}`;
+
+    // Create toast data with ID (initialize count to 1)
+    const toastData: ToastData = { ...data, id, count: 1 };
 
     // Create toast instance
     const toast = new Toast(toastData, {
       ...options,
+      position: this.position, // Pass current position for swipe direction
+      swipeToDismiss: this.swipeToDismiss, // Pass swipe-to-dismiss setting
       onClose: (closedId) => {
         this.toasts.delete(closedId);
         // Update close-all button visibility after toast removal
         this.updateCloseAllButton();
+        // Save pinned toasts if persistence enabled
+        if (this.persistPinnedToasts) {
+          this.savePinnedToasts();
+        }
         options?.onClose?.(closedId);
+      },
+      onPinToggle: (toastId, isPinned) => {
+        this.handlePinToggle(toastId, isPinned);
       },
     });
 
@@ -382,7 +518,8 @@ export class ToastManager {
     });
 
     if (import.meta.env.DEV) {
-      console.log('[Catchy ToastManager] Toast shown:', id, data.type, `(${this.toasts.size}/${this.MAX_TOASTS})`);
+      const pinnedCount = this.toasts.size - unpinnedCount;
+      console.log('[Catchy ToastManager] Toast shown:', id, data.type, `(${unpinnedCount}/${this.MAX_TOASTS} unpinned, ${pinnedCount} pinned)`);
     }
 
     return id;
@@ -426,7 +563,11 @@ export class ToastManager {
       console.log('[Catchy ToastManager] Position changed:', this.position, '→', position);
     }
     this.position = position;
-    this.updateContainerPosition();
+
+    // Only update container if it exists (may be called before initialize())
+    if (this.container) {
+      this.updateContainerPosition();
+    }
   }
 
   /**
@@ -437,11 +578,27 @@ export class ToastManager {
   }
 
   /**
+   * Set swipe-to-dismiss enabled state
+   */
+  public setSwipeToDismiss(enabled: boolean): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Swipe-to-dismiss changed:', this.swipeToDismiss, '→', enabled);
+    }
+    this.swipeToDismiss = enabled;
+  }
+
+  /**
+   * Get swipe-to-dismiss enabled state
+   */
+  public getSwipeToDismiss(): boolean {
+    return this.swipeToDismiss;
+  }
+
+  /**
    * Update container position classes
    */
   private updateContainerPosition(): void {
     if (!this.container) {
-      console.warn('[Catchy ToastManager] updateContainerPosition: container is null');
       return;
     }
 
@@ -475,6 +632,11 @@ export class ToastManager {
    * Destroy the toast manager and clean up
    */
   public destroy(): void {
+    // Save pinned toasts before destroying if persistence enabled
+    if (this.persistPinnedToasts) {
+      this.savePinnedToasts();
+    }
+
     this.closeAll();
     const host = document.getElementById('catchy-toast-host');
     host?.remove();
@@ -484,6 +646,114 @@ export class ToastManager {
 
     if (import.meta.env.DEV) {
       console.log('[Catchy ToastManager] Destroyed');
+    }
+  }
+
+  /**
+   * Set persist pinned toasts enabled state
+   */
+  public setPersistPinnedToasts(enabled: boolean): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Persist pinned toasts changed:', this.persistPinnedToasts, '→', enabled);
+    }
+    this.persistPinnedToasts = enabled;
+
+    // If disabling, clear saved pinned toasts
+    if (!enabled) {
+      this.clearSavedPinnedToasts();
+    }
+  }
+
+  /**
+   * Get persist pinned toasts enabled state
+   */
+  public getPersistPinnedToasts(): boolean {
+    return this.persistPinnedToasts;
+  }
+
+  /**
+   * Get storage key for current hostname
+   */
+  private getStorageKey(): string {
+    const hostname = window.location.hostname || 'localhost';
+    return `${this.STORAGE_KEY_PREFIX}${hostname}`;
+  }
+
+  /**
+   * Save pinned toasts to localStorage
+   */
+  private savePinnedToasts(): void {
+    if (!this.persistPinnedToasts) return;
+
+    const pinnedToasts: ToastData[] = [];
+    for (const toast of this.toasts.values()) {
+      const data = toast.getData();
+      if (data.isPinned) {
+        pinnedToasts.push(data);
+      }
+    }
+
+    if (pinnedToasts.length > 0) {
+      try {
+        localStorage.setItem(this.getStorageKey(), JSON.stringify(pinnedToasts));
+        if (import.meta.env.DEV) {
+          console.log('[Catchy ToastManager] Saved', pinnedToasts.length, 'pinned toasts');
+        }
+      } catch (error) {
+        console.error('[Catchy ToastManager] Failed to save pinned toasts:', error);
+      }
+    } else {
+      // Clear storage if no pinned toasts
+      this.clearSavedPinnedToasts();
+    }
+  }
+
+  /**
+   * Load pinned toasts from localStorage
+   */
+  public loadPinnedToasts(): void {
+    if (!this.persistPinnedToasts) return;
+
+    try {
+      const saved = localStorage.getItem(this.getStorageKey());
+      if (!saved) return;
+
+      const pinnedToasts: ToastData[] = JSON.parse(saved);
+      if (import.meta.env.DEV) {
+        console.log('[Catchy ToastManager] Loading', pinnedToasts.length, 'pinned toasts');
+      }
+
+      for (const data of pinnedToasts) {
+        this.showToast(data, { autoCloseMs: 0 });
+      }
+    } catch (error) {
+      console.error('[Catchy ToastManager] Failed to load pinned toasts:', error);
+      this.clearSavedPinnedToasts();
+    }
+  }
+
+  /**
+   * Clear saved pinned toasts from localStorage
+   */
+  private clearSavedPinnedToasts(): void {
+    try {
+      localStorage.removeItem(this.getStorageKey());
+    } catch (error) {
+      console.error('[Catchy ToastManager] Failed to clear saved pinned toasts:', error);
+    }
+  }
+
+  /**
+   * Handle pin toggle from Toast instance
+   */
+  private handlePinToggle(id: string, isPinned: boolean): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Toast', id, isPinned ? 'pinned' : 'unpinned');
+    }
+
+    // Save pinned toasts if persistence enabled
+    if (this.persistPinnedToasts) {
+      this.savePinnedToasts();
     }
   }
 }
