@@ -35,15 +35,19 @@ export default function OptionsApp() {
 
   // Save settings to Chrome storage
   const saveSettings = (newSettings: CatchySettings) => {
-    setSettings(newSettings);
-    setSaveError(null); // Clear any previous errors
+    const previousSettings = settings; // Preserve for rollback on error
+    setSettings(newSettings); // Optimistically update UI
     chrome.storage.sync.set({ settings: newSettings }, () => {
       if (chrome.runtime.lastError) {
         console.error('[Catchy Options] Failed to save settings:', chrome.runtime.lastError);
+        // Rollback UI to previous settings
+        setSettings(previousSettings);
         setSaveError(chrome.runtime.lastError.message || 'Failed to save settings');
         setTimeout(() => setSaveError(null), 3000);
         return;
       }
+      // Only show success indicator if save actually succeeded
+      setSaveError(null); // Clear any previous errors only on success
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
