@@ -14,6 +14,7 @@
 import { toastManager } from './toast-manager';
 import { errorHistoryManager } from './error-history-manager';
 import { ErrorDrawer } from './components/ErrorDrawer';
+import { DEFAULT_SETTINGS } from '@/types';
 import type { ErrorType, CatchyError } from '@/types';
 
 console.log('[Catchy Content] Content script loaded');
