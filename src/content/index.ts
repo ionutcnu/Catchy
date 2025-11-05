@@ -57,8 +57,9 @@ async function loadSettings() {
     if (isGloballyEnabled) {
       // Global mode ON: All sites enabled by default, unless explicitly disabled
       if (perSiteSettings[currentHostname]) {
-        // Site has explicit setting - respect it
-        isEnabledForCurrentSite = perSiteSettings[currentHostname].enabled;
+        // Site has explicit setting - respect it if boolean, otherwise default to true
+        const siteEnabled = perSiteSettings[currentHostname].enabled;
+        isEnabledForCurrentSite = typeof siteEnabled === 'boolean' ? siteEnabled : true;
       } else {
         // No per-site setting - enabled by default when global is ON
         isEnabledForCurrentSite = true;
@@ -66,7 +67,9 @@ async function loadSettings() {
     } else {
       // Global mode OFF: Opt-in mode - only explicitly enabled sites work
       if (perSiteSettings[currentHostname]) {
-        isEnabledForCurrentSite = perSiteSettings[currentHostname].enabled;
+        // Site has explicit setting - respect it if boolean, otherwise default to false
+        const siteEnabled = perSiteSettings[currentHostname].enabled;
+        isEnabledForCurrentSite = typeof siteEnabled === 'boolean' ? siteEnabled : false;
       } else {
         // No per-site setting - disabled by default when global is OFF
         isEnabledForCurrentSite = false;
@@ -271,7 +274,7 @@ function showToast(error: {
 }) {
   // Create a complete CatchyError object
   const catchyError: CatchyError = {
-    id: `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `error-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
     type: error.type as ErrorType,
     message: error.message,
     file: error.file,
@@ -322,14 +325,18 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     if (isGloballyEnabled) {
       // Global mode ON: All sites enabled by default, unless explicitly disabled
       if (perSiteSettings[currentHostname]) {
-        isEnabledForCurrentSite = perSiteSettings[currentHostname].enabled;
+        // Site has explicit setting - respect it if boolean, otherwise default to true
+        const siteEnabled = perSiteSettings[currentHostname].enabled;
+        isEnabledForCurrentSite = typeof siteEnabled === 'boolean' ? siteEnabled : true;
       } else {
         isEnabledForCurrentSite = true;
       }
     } else {
       // Global mode OFF: Opt-in mode - only explicitly enabled sites work
       if (perSiteSettings[currentHostname]) {
-        isEnabledForCurrentSite = perSiteSettings[currentHostname].enabled;
+        // Site has explicit setting - respect it if boolean, otherwise default to false
+        const siteEnabled = perSiteSettings[currentHostname].enabled;
+        isEnabledForCurrentSite = typeof siteEnabled === 'boolean' ? siteEnabled : false;
       } else {
         isEnabledForCurrentSite = false;
       }
