@@ -14,10 +14,13 @@ export class ToastManager {
   private closeAllButton: HTMLButtonElement | null = null;
   private toasts: Map<string, Toast> = new Map();
   private nextId = 0;
-  private readonly MAX_TOASTS = 5; // Maximum number of visible toasts
+  private maxToasts = 5; // Maximum number of visible toasts (dynamic, loaded from settings)
   private position: ToastPosition = 'bottom-right'; // Default position
   private swipeToDismiss = true; // Default swipe-to-dismiss enabled
   private persistPinnedToasts = false; // Default persist pinned toasts disabled
+  private toastSize: 'small' | 'medium' | 'large' | 'custom' = 'medium'; // Default toast size
+  private customWidth = 400; // Custom width in pixels (when toastSize is 'custom')
+  private customHeight = 100; // Custom height in pixels (when toastSize is 'custom')
   private readonly STORAGE_KEY_PREFIX = 'catchy-pinned-toasts-'; // LocalStorage key prefix
 
   /**
@@ -76,6 +79,9 @@ export class ToastManager {
       }
     });
 
+    // Apply CSS variables for current size setting (in case settings were loaded before initialization)
+    this.updateCSSVariables();
+
     if (import.meta.env.DEV) {
       console.log('[Catchy ToastManager] Initialized with Shadow DOM');
     }
@@ -113,10 +119,20 @@ export class ToastManager {
         --catchy-position-top: 20px;
         --catchy-position-left: 20px;
 
-        /* Typography */
+        /* Typography - Default (Medium) */
         --catchy-font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         --catchy-font-size: 14px;
         --catchy-line-height: 1.5;
+        --catchy-padding: 16px;
+
+        /* Size Variants */
+        --catchy-font-size-small: 12px;
+        --catchy-font-size-medium: 14px;
+        --catchy-font-size-large: 16px;
+
+        --catchy-padding-small: 12px;
+        --catchy-padding-medium: 16px;
+        --catchy-padding-large: 20px;
       }
 
       /* Toast Container */
@@ -125,7 +141,7 @@ export class ToastManager {
         display: flex;
         flex-direction: column;
         gap: var(--catchy-gap);
-        max-width: 400px;
+        max-width: var(--catchy-custom-width, 400px);
         pointer-events: none;
         z-index: 9999;
       }
@@ -157,12 +173,13 @@ export class ToastManager {
       .catchy-toast {
         background: var(--catchy-bg-console);
         color: var(--catchy-text);
-        padding: 16px;
+        padding: var(--catchy-padding);
         border-radius: var(--catchy-radius);
         box-shadow: var(--catchy-shadow);
         font-family: var(--catchy-font-family);
         font-size: var(--catchy-font-size);
         line-height: var(--catchy-line-height);
+        min-height: var(--catchy-custom-height, auto);
         pointer-events: auto;
         cursor: default;
 
@@ -457,17 +474,22 @@ export class ToastManager {
         // Found duplicate - increment counter instead of creating new toast
         existingToast.incrementCounter();
         if (import.meta.env.DEV) {
-          console.log('[Catchy ToastManager] Duplicate error, incrementing counter for:', existingId);
+          console.log(
+            '[Catchy ToastManager] Duplicate error, incrementing counter for:',
+            existingId
+          );
         }
         return existingId;
       }
     }
 
     // Count unpinned toasts only
-    const unpinnedCount = Array.from(this.toasts.values()).filter(t => !t.getData().isPinned).length;
+    const unpinnedCount = Array.from(this.toasts.values()).filter(
+      (t) => !t.getData().isPinned
+    ).length;
 
     // Check if we've reached max UNPINNED toasts limit
-    if (unpinnedCount >= this.MAX_TOASTS) {
+    if (unpinnedCount >= this.maxToasts) {
       // Remove the oldest UNPINNED toast
       for (const [toastId, toast] of this.toasts) {
         if (!toast.getData().isPinned) {
@@ -519,7 +541,12 @@ export class ToastManager {
 
     if (import.meta.env.DEV) {
       const pinnedCount = this.toasts.size - unpinnedCount;
-      console.log('[Catchy ToastManager] Toast shown:', id, data.type, `(${unpinnedCount}/${this.MAX_TOASTS} unpinned, ${pinnedCount} pinned)`);
+      console.log(
+        '[Catchy ToastManager] Toast shown:',
+        id,
+        data.type,
+        `(${unpinnedCount}/${this.maxToasts} unpinned, ${pinnedCount} pinned)`
+      );
     }
 
     return id;
@@ -582,7 +609,12 @@ export class ToastManager {
    */
   public setSwipeToDismiss(enabled: boolean): void {
     if (import.meta.env.DEV) {
-      console.log('[Catchy ToastManager] Swipe-to-dismiss changed:', this.swipeToDismiss, '→', enabled);
+      console.log(
+        '[Catchy ToastManager] Swipe-to-dismiss changed:',
+        this.swipeToDismiss,
+        '→',
+        enabled
+      );
     }
     this.swipeToDismiss = enabled;
   }
@@ -654,7 +686,12 @@ export class ToastManager {
    */
   public setPersistPinnedToasts(enabled: boolean): void {
     if (import.meta.env.DEV) {
-      console.log('[Catchy ToastManager] Persist pinned toasts changed:', this.persistPinnedToasts, '→', enabled);
+      console.log(
+        '[Catchy ToastManager] Persist pinned toasts changed:',
+        this.persistPinnedToasts,
+        '→',
+        enabled
+      );
     }
     this.persistPinnedToasts = enabled;
 
@@ -754,6 +791,123 @@ export class ToastManager {
     // Save pinned toasts if persistence enabled
     if (this.persistPinnedToasts) {
       this.savePinnedToasts();
+    }
+  }
+
+  /**
+   * Set maximum number of toasts
+   */
+  public setMaxToasts(count: number): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Max toasts changed:', this.maxToasts, '→', count);
+    }
+    this.maxToasts = count;
+  }
+
+  /**
+   * Get maximum number of toasts
+   */
+  public getMaxToasts(): number {
+    return this.maxToasts;
+  }
+
+  /**
+   * Set toast size and update CSS variables
+   */
+  public setToastSize(size: 'small' | 'medium' | 'large' | 'custom'): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Toast size changed:', this.toastSize, '→', size);
+    }
+    this.toastSize = size;
+    this.updateCSSVariables();
+  }
+
+  /**
+   * Get current toast size
+   */
+  public getToastSize(): 'small' | 'medium' | 'large' | 'custom' {
+    return this.toastSize;
+  }
+
+  /**
+   * Set custom width for toasts (when size is 'custom')
+   */
+  public setCustomWidth(width: number): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Custom width changed:', this.customWidth, '→', width);
+    }
+    this.customWidth = width;
+    this.updateCSSVariables();
+  }
+
+  /**
+   * Set custom height for toasts (when size is 'custom')
+   */
+  public setCustomHeight(height: number): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Custom height changed:', this.customHeight, '→', height);
+    }
+    this.customHeight = height;
+    this.updateCSSVariables();
+  }
+
+  /**
+   * Get custom width
+   */
+  public getCustomWidth(): number {
+    return this.customWidth;
+  }
+
+  /**
+   * Get custom height
+   */
+  public getCustomHeight(): number {
+    return this.customHeight;
+  }
+
+  /**
+   * Update CSS variables based on current settings
+   */
+  private updateCSSVariables(): void {
+    if (!this.shadowRoot) return;
+
+    const host = this.shadowRoot.host as HTMLElement;
+    const style = host.style;
+
+    // Update font size and padding based on selected size
+    switch (this.toastSize) {
+      case 'small':
+        style.setProperty('--catchy-font-size', 'var(--catchy-font-size-small)');
+        style.setProperty('--catchy-padding', 'var(--catchy-padding-small)');
+        style.removeProperty('--catchy-custom-width');
+        style.removeProperty('--catchy-custom-height');
+        break;
+      case 'medium':
+        style.setProperty('--catchy-font-size', 'var(--catchy-font-size-medium)');
+        style.setProperty('--catchy-padding', 'var(--catchy-padding-medium)');
+        style.removeProperty('--catchy-custom-width');
+        style.removeProperty('--catchy-custom-height');
+        break;
+      case 'large':
+        style.setProperty('--catchy-font-size', 'var(--catchy-font-size-large)');
+        style.setProperty('--catchy-padding', 'var(--catchy-padding-large)');
+        style.removeProperty('--catchy-custom-width');
+        style.removeProperty('--catchy-custom-height');
+        break;
+      case 'custom':
+        // For custom size, use medium font/padding but apply custom dimensions
+        style.setProperty('--catchy-font-size', 'var(--catchy-font-size-medium)');
+        style.setProperty('--catchy-padding', 'var(--catchy-padding-medium)');
+        style.setProperty('--catchy-custom-width', `${this.customWidth}px`);
+        style.setProperty('--catchy-custom-height', `${this.customHeight}px`);
+        break;
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] CSS variables updated for size:', this.toastSize);
+      if (this.toastSize === 'custom') {
+        console.log('[Catchy ToastManager] Custom dimensions:', this.customWidth, 'x', this.customHeight);
+      }
     }
   }
 }

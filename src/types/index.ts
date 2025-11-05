@@ -37,6 +37,11 @@ export type ErrorType =
 export type ToastPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 
 /**
+ * Toast notification size
+ */
+export type ToastSize = 'small' | 'medium' | 'large' | 'custom';
+
+/**
  * Extension settings saved in chrome.storage
  */
 export interface CatchySettings {
@@ -68,6 +73,18 @@ export interface CatchySettings {
     autoCloseMs: number; // Auto-close after X milliseconds (0 = never)
     swipeToDismiss: boolean; // Enable swipe-to-dismiss gesture
     persistPinnedToasts: boolean; // Persist pinned toasts across page refreshes
+    toastSize: ToastSize; // Size of toast notifications
+    customWidth?: number; // Custom width in pixels (when toastSize is 'custom')
+    customHeight?: number; // Custom height in pixels (when toastSize is 'custom')
+    maxHistorySize: number; // Max errors to keep in history (50-500)
+    drawerShortcut: string; // Keyboard shortcut to open error drawer (e.g., "Alt+E")
+
+    // Visual customization
+    backgroundColor: string; // Toast background color (hex/hsl)
+    textColor: string; // Toast text color (hex/hsl)
+    borderRadius: number; // Border radius in pixels
+    shadow: boolean; // Enable/disable shadow
+    spacing: number; // Gap between toasts in pixels
   };
 
   // Rate limiting
@@ -97,13 +114,14 @@ export type ExtensionMessage =
   | { type: 'GET_SETTINGS' }
   | { type: 'UPDATE_SETTINGS'; settings: Partial<CatchySettings> }
   | { type: 'TOGGLE_ENABLED' }
-  | { type: 'CLEAR_ERRORS' };
+  | { type: 'CLEAR_ERRORS' }
+  | { type: 'OPEN_DRAWER' };
 
 /**
  * Default settings for first-time users
  */
 export const DEFAULT_SETTINGS: CatchySettings = {
-  enabled: true,
+  enabled: false, // Disabled globally by default - opt-in per site
   perSiteSettings: {},
   errorTypes: {
     consoleError: true,
@@ -119,6 +137,18 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     autoCloseMs: 0,
     swipeToDismiss: true,
     persistPinnedToasts: false,
+    toastSize: 'medium',
+    customWidth: 400,
+    customHeight: 100,
+    maxHistorySize: 200,
+    drawerShortcut: 'Alt+E', // Default keyboard shortcut
+
+    // Visual customization defaults
+    backgroundColor: '#dc2626', // Red-600 (error color)
+    textColor: '#ffffff', // White
+    borderRadius: 8, // 8px rounded corners
+    shadow: true, // Shadow enabled
+    spacing: 12, // 12px gap between toasts
   },
   rateLimit: {
     maxPerInterval: 5,

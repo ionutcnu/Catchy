@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { type CatchySettings, DEFAULT_SETTINGS, type ToastPosition } from '@/types';
 
 export default function OptionsApp() {
@@ -7,6 +8,7 @@ export default function OptionsApp() {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [newSiteHostname, setNewSiteHostname] = useState('');
   const saveIdRef = useRef(0); // Track save attempts to prevent race conditions
 
   // Load settings and theme preference on mount
@@ -113,8 +115,72 @@ export default function OptionsApp() {
     // Save to chrome storage
     chrome.storage.sync.set({ darkMode: newDarkMode }, () => {
       if (chrome.runtime.lastError) {
-        console.error('[Catchy Options] Failed to save dark mode preference:', chrome.runtime.lastError);
+        console.error(
+          '[Catchy Options] Failed to save dark mode preference:',
+          chrome.runtime.lastError
+        );
       }
+    });
+  };
+
+  // Add new site to per-site settings
+  const handleAddSite = () => {
+    if (!newSiteHostname.trim()) return;
+
+    // Normalize hostname: extract hostname from URL, strip www, lowercase
+    let input = newSiteHostname.trim();
+
+    // Ensure there's a scheme for URL constructor
+    if (!input.match(/^https?:\/\//)) {
+      input = `https://${input}`;
+    }
+
+    let normalized: string;
+    try {
+      const url = new URL(input);
+      // Extract hostname (includes port if present), strip leading "www.", lowercase
+      normalized = url.hostname.replace(/^www\./, '').toLowerCase();
+    } catch {
+      // If URL parsing fails, fall back to basic normalization
+      normalized = input
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+        .replace(/\/.*$/, '')
+        .toLowerCase();
+    }
+
+    if (!normalized) return;
+
+    saveSettings({
+      ...settings,
+      perSiteSettings: {
+        ...settings.perSiteSettings,
+        [normalized]: { enabled: true },
+      },
+    });
+
+    setNewSiteHostname(''); // Clear input
+  };
+
+  // Toggle per-site enabled state
+  const handleToggleSite = (hostname: string) => {
+    saveSettings({
+      ...settings,
+      perSiteSettings: {
+        ...settings.perSiteSettings,
+        [hostname]: {
+          enabled: !settings.perSiteSettings[hostname]?.enabled,
+        },
+      },
+    });
+  };
+
+  // Remove site from per-site settings
+  const handleRemoveSite = (hostname: string) => {
+    const { [hostname]: _, ...remainingSettings } = settings.perSiteSettings;
+    saveSettings({
+      ...settings,
+      perSiteSettings: remainingSettings,
     });
   };
 
@@ -189,6 +255,39 @@ export default function OptionsApp() {
 
         {/* Main Content */}
         <div className="space-y-6">
+          {/* Global Enable/Disable Toggle */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Global Control</CardTitle>
+              <CardDescription>
+                Master toggle to enable or disable Catchy across all websites
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <label className="flex items-center justify-between p-4 rounded-lg border-2 border-border hover:bg-accent/50 cursor-pointer transition-colors">
+                <div className="flex-1">
+                  <div className="font-medium text-lg">
+                    {settings.enabled ? 'Catchy is Enabled' : 'Catchy is Disabled'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {settings.enabled
+                      ? 'Error notifications are active (subject to per-site settings)'
+                      : 'Error notifications are completely disabled on all sites'}
+                  </div>
+                </div>
+                <Switch
+                  checked={settings.enabled}
+                  onCheckedChange={(checked) => {
+                    saveSettings({
+                      ...settings,
+                      enabled: checked,
+                    });
+                  }}
+                />
+              </label>
+            </CardContent>
+          </Card>
+
           {/* Toast Position Settings */}
           <Card>
             <CardHeader>
@@ -281,9 +380,7 @@ export default function OptionsApp() {
           <Card>
             <CardHeader>
               <CardTitle>Error Types</CardTitle>
-              <CardDescription>
-                Choose which types of errors to capture and display
-              </CardDescription>
+              <CardDescription>Choose which types of errors to capture and display</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -370,26 +467,334 @@ export default function OptionsApp() {
             </CardContent>
           </Card>
 
+          {/* Per-Site Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Coming Soon!</CardTitle>
+              <CardTitle>Per-Site Settings</CardTitle>
               <CardDescription>
-                More settings are under construction. For now, you can toggle Catchy on/off from the
-                popup.
+                Control which websites Catchy is enabled on. Add sites to customize behavior per
+                domain.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {/* Add New Site Input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSiteHostname}
+                    onChange={(e) => setNewSiteHostname(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleAddSite();
+                    }}
+                    placeholder="example.com"
+                    className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddSite}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Add Site
+                  </button>
+                </div>
+
+                {/* Sites List */}
+                {Object.keys(settings.perSiteSettings).length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No per-site settings configured. Add a site above to get started.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {Object.entries(settings.perSiteSettings).map(([hostname, siteSettings]) => (
+                      <div
+                        key={hostname}
+                        className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <Switch
+                            checked={siteSettings.enabled}
+                            onCheckedChange={() => handleToggleSite(hostname)}
+                          />
+                          <div>
+                            <div className="font-medium">{hostname}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {siteSettings.enabled ? 'Enabled' : 'Disabled'}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSite(hostname)}
+                          className="text-destructive hover:text-destructive/90 px-2 py-1 rounded transition-colors"
+                          aria-label={`Remove ${hostname}`}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Display Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Display Settings</CardTitle>
+              <CardDescription>
+                Control how many toasts appear and how they behave
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Max Toasts Slider */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Planned Features:</h3>
-                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                    <li>Custom ignore rules for specific error types</li>
-                    <li>Per-site settings and configurations</li>
-                    <li>Theme customization (dark mode, accent colors)</li>
-                    <li>Export and import settings</li>
-                    <li>Max toasts and auto-close timing</li>
-                    <li>Error log history and filtering</li>
-                  </ul>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-medium">Max toasts on screen</label>
+                    <span className="text-sm font-mono text-muted-foreground">
+                      {settings.theme.maxToasts}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={settings.theme.maxToasts}
+                    onChange={(e) => {
+                      saveSettings({
+                        ...settings,
+                        theme: {
+                          ...settings.theme,
+                          maxToasts: Number(e.target.value),
+                        },
+                      });
+                    }}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Maximum number of error toasts visible at once
+                  </p>
+                </div>
+
+                {/* Auto-close Slider */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-medium">Auto-close after (seconds)</label>
+                    <span className="text-sm font-mono text-muted-foreground">
+                      {settings.theme.autoCloseMs === 0
+                        ? 'Never'
+                        : `${(settings.theme.autoCloseMs / 1000).toFixed(0)}s`}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="60"
+                    step="5"
+                    value={settings.theme.autoCloseMs / 1000}
+                    onChange={(e) => {
+                      saveSettings({
+                        ...settings,
+                        theme: {
+                          ...settings.theme,
+                          autoCloseMs: Number(e.target.value) * 1000,
+                        },
+                      });
+                    }}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Set to 0 to disable auto-close (toasts stay until manually closed)
+                  </p>
+                </div>
+
+                {/* Toast Size Selector */}
+                <div>
+                  <label className="text-sm font-medium block mb-2">Toast size</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {(['small', 'medium', 'large', 'custom'] as const).map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => {
+                          saveSettings({
+                            ...settings,
+                            theme: {
+                              ...settings.theme,
+                              toastSize: size,
+                            },
+                          });
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-all capitalize ${
+                          settings.theme.toastSize === size
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Small: 12px | Medium: 14px | Large: 16px font size
+                  </p>
+
+                  {/* Custom Size Inputs - Only show when 'custom' is selected */}
+                  {settings.theme.toastSize === 'custom' && (
+                    <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
+                      <p className="text-sm font-medium mb-3">Custom dimensions</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">
+                            Width (px)
+                          </label>
+                          <input
+                            type="number"
+                            min="200"
+                            max="800"
+                            value={settings.theme.customWidth || 400}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              if (value >= 200 && value <= 800) {
+                                saveSettings({
+                                  ...settings,
+                                  theme: {
+                                    ...settings.theme,
+                                    customWidth: value,
+                                  },
+                                });
+                              }
+                            }}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">
+                            Height (px)
+                          </label>
+                          <input
+                            type="number"
+                            min="50"
+                            max="400"
+                            value={settings.theme.customHeight || 100}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              if (value >= 50 && value <= 400) {
+                                saveSettings({
+                                  ...settings,
+                                  theme: {
+                                    ...settings.theme,
+                                    customHeight: value,
+                                  },
+                                });
+                              }
+                            }}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Width: 200-800px | Height: 50-400px
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Error History Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Error History</CardTitle>
+              <CardDescription>
+                Configure error history storage and access past errors
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Max History Size Slider */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-medium">Max errors in history</label>
+                    <span className="text-sm font-mono text-muted-foreground">
+                      {settings.theme.maxHistorySize}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="500"
+                    step="50"
+                    value={settings.theme.maxHistorySize}
+                    onChange={(e) => {
+                      saveSettings({
+                        ...settings,
+                        theme: {
+                          ...settings.theme,
+                          maxHistorySize: Number(e.target.value),
+                        },
+                      });
+                    }}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ⚠️ Higher values use more memory. Errors are stored during the page session.
+                  </p>
+                </div>
+
+                {/* Drawer Keyboard Shortcut */}
+                <div className="pt-4 border-t border-border">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium block mb-2">
+                        📊 Drawer Keyboard Shortcut
+                      </label>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Customize the keyboard shortcut to open the error history drawer on any
+                        webpage where Catchy is active.
+                      </p>
+                      <input
+                        type="text"
+                        value={settings.theme.drawerShortcut || 'Alt+E'}
+                        onChange={(e) => {
+                          saveSettings({
+                            ...settings,
+                            theme: {
+                              ...settings.theme,
+                              drawerShortcut: e.target.value,
+                            },
+                          });
+                        }}
+                        placeholder="e.g., Alt+E, Ctrl+Shift+H"
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm font-mono"
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Examples: <code className="px-1 bg-muted rounded">Alt+E</code>,{' '}
+                        <code className="px-1 bg-muted rounded">Ctrl+Shift+H</code>,{' '}
+                        <code className="px-1 bg-muted rounded">Ctrl+Alt+D</code>
+                      </p>
+                    </div>
+
+                    {/* Current Shortcut Display */}
+                    <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                      <div className="text-xs text-muted-foreground mb-1">Current shortcut:</div>
+                      <div className="flex items-center gap-2">
+                        {(settings.theme.drawerShortcut || 'Alt+E')
+                          .split('+')
+                          .map((key, index, array) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <kbd className="px-2 py-1 bg-background border border-border rounded font-mono text-xs">
+                                {key.trim()}
+                              </kbd>
+                              {index < array.length - 1 && <span className="text-xs">+</span>}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>

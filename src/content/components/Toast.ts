@@ -104,7 +104,10 @@ export class Toast {
 
     const pinButton = document.createElement('button');
     pinButton.className = 'catchy-toast-pin';
-    pinButton.setAttribute('aria-label', this.data.isPinned ? 'Unpin notification' : 'Pin notification');
+    pinButton.setAttribute(
+      'aria-label',
+      this.data.isPinned ? 'Unpin notification' : 'Pin notification'
+    );
     pinButton.innerHTML = this.getPinIconSVG(this.data.isPinned ?? false);
     pinButton.addEventListener('click', () => this.togglePin());
     buttonContainer.appendChild(pinButton);
@@ -187,7 +190,10 @@ export class Toast {
     const pinButton = this.element.querySelector('.catchy-toast-pin') as HTMLButtonElement;
     if (pinButton) {
       pinButton.innerHTML = this.getPinIconSVG(this.data.isPinned);
-      pinButton.setAttribute('aria-label', this.data.isPinned ? 'Unpin notification' : 'Pin notification');
+      pinButton.setAttribute(
+        'aria-label',
+        this.data.isPinned ? 'Unpin notification' : 'Pin notification'
+      );
     }
 
     // Update visual state
@@ -227,8 +233,10 @@ export class Toast {
 
       // Don't interfere with text selection
       const target = e.target as HTMLElement;
-      if (target.classList.contains('catchy-toast-message') ||
-          target.classList.contains('catchy-toast-location')) {
+      if (
+        target.classList.contains('catchy-toast-message') ||
+        target.classList.contains('catchy-toast-location')
+      ) {
         return;
       }
 
