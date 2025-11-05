@@ -741,6 +741,13 @@ export class ErrorDrawer {
    * Destroy the drawer
    */
   public destroy(): void {
+    // Remove ESC key listener if it exists
+    document.removeEventListener('keydown', this.handleEscapeKey);
+
+    // Reset open state
+    this.isOpen = false;
+
+    // Remove DOM element
     if (this.drawerElement) {
       this.drawerElement.remove();
       this.drawerElement = null;

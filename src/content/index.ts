@@ -43,10 +43,10 @@ let drawerShortcut = 'Alt+E'; // Default keyboard shortcut for opening drawer
 async function loadSettings() {
   try {
     const result = await chrome.storage.sync.get(['settings']);
-    const settings = result.settings || { enabled: true };
+    const settings = result.settings || DEFAULT_SETTINGS;
 
     // Update global enabled state
-    isGloballyEnabled = settings.enabled ?? true;
+    isGloballyEnabled = settings.enabled ?? DEFAULT_SETTINGS.enabled;
 
     // Check per-site settings for current hostname
     const currentHostname = window.location.hostname;
@@ -310,7 +310,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 
     // Update global enabled state
     const wasGloballyEnabled = isGloballyEnabled;
-    isGloballyEnabled = newSettings.enabled ?? true;
+    isGloballyEnabled = newSettings.enabled ?? DEFAULT_SETTINGS.enabled;
 
     // Update per-site settings for current hostname
     const currentHostname = window.location.hostname;

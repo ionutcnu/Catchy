@@ -127,11 +127,27 @@ export default function OptionsApp() {
   const handleAddSite = () => {
     if (!newSiteHostname.trim()) return;
 
-    // Normalize hostname (remove protocol, www, trailing slash)
-    const normalized = newSiteHostname
-      .trim()
-      .replace(/^(https?:\/\/)?(www\.)?/, '')
-      .replace(/\/$/, '');
+    // Normalize hostname: extract hostname from URL, strip www, lowercase
+    let input = newSiteHostname.trim();
+
+    // Ensure there's a scheme for URL constructor
+    if (!input.match(/^https?:\/\//)) {
+      input = `https://${input}`;
+    }
+
+    let normalized: string;
+    try {
+      const url = new URL(input);
+      // Extract hostname (includes port if present), strip leading "www.", lowercase
+      normalized = url.hostname.replace(/^www\./, '').toLowerCase();
+    } catch {
+      // If URL parsing fails, fall back to basic normalization
+      normalized = input
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+        .replace(/\/.*$/, '')
+        .toLowerCase();
+    }
 
     if (!normalized) return;
 
