@@ -41,9 +41,12 @@ async function loadSettings() {
     // Update our cached state
     isExtensionEnabled = settings.enabled;
 
-    // Update enabled error types if available
+    // Update enabled error types if available - merge with defaults to preserve missing keys
     if (settings.errorTypes) {
-      enabledErrorTypes = settings.errorTypes;
+      enabledErrorTypes = {
+        ...enabledErrorTypes,
+        ...settings.errorTypes,
+      };
     }
 
     // Apply toast position if set
@@ -179,9 +182,12 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     const wasEnabled = isExtensionEnabled;
     isExtensionEnabled = newSettings.enabled;
 
-    // Update enabled error types if changed
+    // Update enabled error types if changed - merge with defaults to preserve missing keys
     if (newSettings.errorTypes) {
-      enabledErrorTypes = newSettings.errorTypes;
+      enabledErrorTypes = {
+        ...enabledErrorTypes,
+        ...newSettings.errorTypes,
+      };
       console.log('[Catchy Content] Error types changed:', enabledErrorTypes);
     }
 

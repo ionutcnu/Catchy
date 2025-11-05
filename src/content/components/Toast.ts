@@ -48,6 +48,7 @@ export class Toast {
     this.options = {
       autoCloseMs: options.autoCloseMs ?? 5000,
       onClose: options.onClose,
+      onPinToggle: options.onPinToggle,
       position: options.position ?? 'bottom-right',
       swipeToDismiss: options.swipeToDismiss ?? true,
     };
