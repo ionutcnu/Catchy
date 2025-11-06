@@ -1,7 +1,7 @@
 {
   "name": "catchy",
   "version": "0.1.0",
-  "description": "A Chrome extension that catches console and runtime errors and shows clean, customizable toasts",
+  "description": "A Chrome extension that catches console and runtime errors and shows clean, customizable toasts with error history drawer and per-site controls",
   "type": "module",
   "scripts": {
     "dev": "vite build --mode development --watch",
@@ -21,9 +21,15 @@
     "chrome-extension",
     "error-tracking",
     "developer-tools",
-    "toast-notifications"
+    "toast-notifications",
+    "error-history",
+    "console-errors",
+    "debugging",
+    "react",
+    "typescript",
+    "tailwind"
   ],
-  "author": "",
+  "author": "Lonut & Wadalin",
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.3.0",
