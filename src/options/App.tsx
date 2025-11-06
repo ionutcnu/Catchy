@@ -846,31 +846,21 @@ export default function OptionsApp() {
               <CardDescription>Recent updates and improvements</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {/* Version 0.1.0 */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="font-semibold text-sm">v0.1.0</span>
-                    <span className="text-xs text-muted-foreground">2025-11-06</span>
-                  </div>
-                  <div className="space-y-3 text-sm">
-                    <div>
-                      <div className="font-medium text-primary mb-1">✨ Added</div>
-                      <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
-                        <li>Error history drawer with up to 200 errors per session</li>
-                        <li>Multiple access methods (keyboard shortcut, toast icon, pin icon)</li>
-                        <li>Customizable keyboard shortcut (default: Alt+E)</li>
-                        <li>Selective error type toggles (Console, Uncaught, Rejections, Resource, Network)</li>
-                        <li>Dark mode support across all UI components</li>
-                        <li>Persist pinned toasts after page refresh</li>
-                        <li>Swipe to dismiss gesture</li>
-                        <li>Per-site settings (enable/disable per domain)</li>
-                        <li>Configurable toast positioning and sizing</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Version 0.1.0 introduces error history drawer with up to 200 errors per session,
+                customizable keyboard shortcuts (Alt+E), dark mode support, per-site settings,
+                selective error type toggles, and swipe-to-dismiss gestures.
+              </p>
+              <a
+                href="https://github.com/ionutcnu/Catchy/blob/main/CHANGELOG.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="View full changelog on GitHub"
+                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+              >
+                View Full Changelog
+                <span aria-hidden="true">→</span>
+              </a>
             </CardContent>
           </Card>
         </div>
