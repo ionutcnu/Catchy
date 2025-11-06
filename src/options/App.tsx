@@ -814,11 +814,62 @@ export default function OptionsApp() {
                 clean, customizable toast notifications. Perfect for debugging and monitoring web
                 applications during development.
               </p>
-              <div className="flex gap-2 text-xs text-muted-foreground">
+
+              {/* Creators */}
+              <div className="mb-4 pb-4 border-b border-border">
+                <div className="text-sm font-medium mb-2">Created by</div>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-md font-medium text-sm">
+                    Lonut
+                  </span>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-md font-medium text-sm">
+                    Wadalin
+                  </span>
+                </div>
+              </div>
+
+              {/* Tech Stack */}
+              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                 <span className="px-2 py-1 bg-muted rounded">v0.1.0</span>
                 <span className="px-2 py-1 bg-muted rounded">React</span>
                 <span className="px-2 py-1 bg-muted rounded">TypeScript</span>
                 <span className="px-2 py-1 bg-muted rounded">Tailwind CSS</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Changelog */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Changelog</CardTitle>
+              <CardDescription>Recent updates and improvements</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Version 0.1.0 */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="font-semibold text-sm">v0.1.0</span>
+                    <span className="text-xs text-muted-foreground">2025-11-06</span>
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <div className="font-medium text-primary mb-1">✨ Added</div>
+                      <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
+                        <li>Error history drawer with up to 200 errors per session</li>
+                        <li>Multiple access methods (keyboard shortcut, toast icon, pin icon)</li>
+                        <li>Customizable keyboard shortcut (default: Alt+E)</li>
+                        <li>Selective error type toggles (Console, Uncaught, Rejections, Resource, Network)</li>
+                        <li>Dark mode support across all UI components</li>
+                        <li>Persist pinned toasts after page refresh</li>
+                        <li>Swipe to dismiss gesture</li>
+                        <li>Per-site settings (enable/disable per domain)</li>
+                        <li>Configurable toast positioning and sizing</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
