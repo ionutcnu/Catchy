@@ -48,6 +48,11 @@ export default defineConfig({
           return "assets/[name].[ext]";
         },
         format: "es",
+        // Prevent Vite from creating shared chunks - inline everything
+        manualChunks(id, { getModuleInfo }) {
+          // Don't create vendor chunks - keep everything together
+          return null;
+        },
       },
     },
 
