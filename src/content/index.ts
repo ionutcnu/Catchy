@@ -55,7 +55,8 @@ interface CatchySettings {
   };
 }
 
-// Inline DEFAULT_SETTINGS to avoid code-splitting issues with Chrome content scripts
+// Inlined from src/types/index.ts:123 to avoid code-splitting issues with Chrome content scripts.
+// IMPORTANT: Any changes to these defaults must be kept in sync with the canonical definition.
 const DEFAULT_SETTINGS: CatchySettings = {
   enabled: false,
   perSiteSettings: {},
