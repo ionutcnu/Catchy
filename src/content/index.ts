@@ -14,8 +14,82 @@
 import { toastManager } from './toast-manager';
 import { errorHistoryManager } from './error-history-manager';
 import { ErrorDrawer } from './components/ErrorDrawer';
-import { DEFAULT_SETTINGS } from '@/types';
-import type { ErrorType, CatchyError } from '@/types';
+import type { ErrorType, CatchyError, ToastPosition, ToastSize, IgnoreRule } from '@/types';
+
+// Inline CatchySettings interface to avoid code-splitting issues
+interface CatchySettings {
+  enabled: boolean;
+  perSiteSettings: {
+    [hostname: string]: {
+      enabled: boolean;
+    };
+  };
+  errorTypes: {
+    consoleError: boolean;
+    uncaught: boolean;
+    unhandledRejection: boolean;
+    resource: boolean;
+    network: boolean;
+  };
+  ignoreRules: IgnoreRule[];
+  theme: {
+    position: ToastPosition;
+    maxToasts: number;
+    autoCloseMs: number;
+    swipeToDismiss: boolean;
+    persistPinnedToasts: boolean;
+    toastSize: ToastSize;
+    customWidth?: number;
+    customHeight?: number;
+    maxHistorySize: number;
+    drawerShortcut: string;
+    backgroundColor: string;
+    textColor: string;
+    borderRadius: number;
+    shadow: boolean;
+    spacing: number;
+  };
+  rateLimit: {
+    maxPerInterval: number;
+    intervalMs: number;
+  };
+}
+
+// Inlined from src/types/index.ts:123 to avoid code-splitting issues with Chrome content scripts.
+// IMPORTANT: Any changes to these defaults must be kept in sync with the canonical definition.
+const DEFAULT_SETTINGS: CatchySettings = {
+  enabled: false,
+  perSiteSettings: {},
+  errorTypes: {
+    consoleError: true,
+    uncaught: true,
+    unhandledRejection: true,
+    resource: false,
+    network: false,
+  },
+  ignoreRules: [],
+  theme: {
+    position: 'bottom-right',
+    maxToasts: 5,
+    autoCloseMs: 0,
+    swipeToDismiss: true,
+    persistPinnedToasts: false,
+    toastSize: 'medium',
+    customWidth: 400,
+    customHeight: 100,
+    maxHistorySize: 200,
+    drawerShortcut: 'Alt+E',
+    backgroundColor: '#dc2626',
+    textColor: '#ffffff',
+    borderRadius: 8,
+    shadow: true,
+    spacing: 12,
+  },
+  rateLimit: {
+    maxPerInterval: 5,
+    intervalMs: 4000,
+  },
+};
 
 console.log('[Catchy Content] Content script loaded');
 
