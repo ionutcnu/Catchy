@@ -79,14 +79,39 @@ export default function PopupApp() {
 
   // Load dark mode preference on mount
   useEffect(() => {
+    // Load initial dark mode
     chrome.storage.sync.get(['darkMode'], (result) => {
       if (result.darkMode !== undefined) {
         setIsDarkMode(result.darkMode);
         if (result.darkMode) {
           document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
         }
       }
     });
+
+    // Listen for dark mode changes
+    const handleStorageChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string
+    ) => {
+      if (areaName === 'sync' && changes.darkMode) {
+        const newDarkMode = changes.darkMode.newValue;
+        setIsDarkMode(newDarkMode);
+        if (newDarkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
   }, []);
 
   // Load settings on mount

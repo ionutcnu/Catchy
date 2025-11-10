@@ -495,6 +495,18 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       isEnabledForCurrentSite
     );
   }
+
+  // Update dark mode for error drawer if changed
+  if (areaName === 'sync' && changes.darkMode) {
+    const newDarkMode = changes.darkMode.newValue;
+    console.log('[Catchy Content] Dark mode storage changed to:', newDarkMode, 'errorDrawer exists:', !!errorDrawer);
+    if (errorDrawer) {
+      errorDrawer.setDarkMode(newDarkMode);
+      console.log('[Catchy Content] Dark mode applied to drawer');
+    } else {
+      console.warn('[Catchy Content] Error drawer not initialized yet, cannot apply dark mode');
+    }
+  }
 });
 
 /**

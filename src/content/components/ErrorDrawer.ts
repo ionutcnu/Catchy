@@ -15,6 +15,7 @@ export class ErrorDrawer {
   private historyManager: ErrorHistoryManager;
   private searchQuery = '';
   private activeFilters: Set<ErrorType> = new Set();
+  private confirmResolve: ((value: boolean) => void) | null = null;
 
   constructor(shadowRoot: ShadowRoot, historyManager: ErrorHistoryManager) {
     this.shadowRoot = shadowRoot;
@@ -440,6 +441,118 @@ export class ErrorDrawer {
       .catchy-error-drawer.dark .catchy-drawer-content::-webkit-scrollbar-thumb:hover {
         background: #6b7280;
       }
+
+      /* Confirmation Modal (shadcn-style) */
+      .catchy-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+        pointer-events: none;
+      }
+
+      .catchy-modal-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .catchy-modal {
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transform: scale(0.95);
+        transition: transform 0.2s ease-in-out;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      .catchy-modal-overlay.show .catchy-modal {
+        transform: scale(1);
+      }
+
+      .catchy-error-drawer.dark .catchy-modal,
+      .catchy-modal-overlay.dark .catchy-modal {
+        background: #1f2937;
+        color: #f3f4f6;
+      }
+
+      .catchy-modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        color: #111827;
+      }
+
+      .catchy-error-drawer.dark .catchy-modal-title,
+      .catchy-modal-overlay.dark .catchy-modal-title {
+        color: #f3f4f6;
+      }
+
+      .catchy-modal-description {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0 0 24px 0;
+        line-height: 1.5;
+      }
+
+      .catchy-error-drawer.dark .catchy-modal-description,
+      .catchy-modal-overlay.dark .catchy-modal-description {
+        color: #9ca3af;
+      }
+
+      .catchy-modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .catchy-modal-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+      }
+
+      .catchy-modal-btn-cancel {
+        background: transparent;
+        color: #374151;
+        border-color: #d1d5db;
+      }
+
+      .catchy-modal-btn-cancel:hover {
+        background: #f3f4f6;
+      }
+
+      .catchy-error-drawer.dark .catchy-modal-btn-cancel,
+      .catchy-modal-overlay.dark .catchy-modal-btn-cancel {
+        color: #d1d5db;
+        border-color: #4b5563;
+      }
+
+      .catchy-error-drawer.dark .catchy-modal-btn-cancel:hover,
+      .catchy-modal-overlay.dark .catchy-modal-btn-cancel:hover {
+        background: #374151;
+      }
+
+      .catchy-modal-btn-confirm {
+        background: #ef4444;
+        color: #ffffff;
+        border-color: #ef4444;
+      }
+
+      .catchy-modal-btn-confirm:hover {
+        background: #dc2626;
+      }
     `;
 
     this.shadowRoot.appendChild(style);
@@ -545,8 +658,13 @@ export class ErrorDrawer {
     const clearBtn = document.createElement('button');
     clearBtn.className = 'catchy-action-btn danger';
     clearBtn.textContent = 'Clear All';
-    clearBtn.addEventListener('click', () => {
-      if (confirm('Are you sure you want to clear all error history?')) {
+    clearBtn.addEventListener('click', async () => {
+      const confirmed = await this.showConfirmDialog(
+        'Clear all error history?',
+        'This action cannot be undone. All error history will be permanently deleted.'
+      );
+
+      if (confirmed) {
         this.historyManager.clear();
         this.renderErrors();
         this.updateStats(stats);
@@ -735,6 +853,122 @@ export class ErrorDrawer {
         this.drawerElement.classList.remove('dark');
       }
     }
+  }
+
+  /**
+   * Show confirmation dialog (shadcn-style)
+   */
+  private showConfirmDialog(title: string, description: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.confirmResolve = resolve;
+
+      // Create modal overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'catchy-modal-overlay';
+
+      // Apply dark mode if drawer is dark
+      if (this.drawerElement?.classList.contains('dark')) {
+        overlay.classList.add('dark');
+      }
+
+      // Create modal
+      const modal = document.createElement('div');
+      modal.className = 'catchy-modal';
+
+      // Modal title
+      const modalTitle = document.createElement('h3');
+      modalTitle.className = 'catchy-modal-title';
+      modalTitle.textContent = title;
+
+      // Modal description
+      const modalDescription = document.createElement('p');
+      modalDescription.className = 'catchy-modal-description';
+      modalDescription.textContent = description;
+
+      // Actions container
+      const actions = document.createElement('div');
+      actions.className = 'catchy-modal-actions';
+
+      // Cancel button
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'catchy-modal-btn catchy-modal-btn-cancel';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.addEventListener('click', () => {
+        this.closeConfirmDialog(overlay, false);
+      });
+
+      // Confirm button
+      const confirmBtn = document.createElement('button');
+      confirmBtn.className = 'catchy-modal-btn catchy-modal-btn-confirm';
+      confirmBtn.textContent = 'Continue';
+      confirmBtn.addEventListener('click', () => {
+        this.closeConfirmDialog(overlay, true);
+      });
+
+      // Assemble modal
+      actions.appendChild(cancelBtn);
+      actions.appendChild(confirmBtn);
+      modal.appendChild(modalTitle);
+      modal.appendChild(modalDescription);
+      modal.appendChild(actions);
+      overlay.appendChild(modal);
+
+      // Add to shadow root
+      this.shadowRoot.appendChild(overlay);
+
+      // Listen for dark mode changes while modal is open
+      const handleDarkModeChange = (
+        changes: { [key: string]: chrome.storage.StorageChange },
+        areaName: string
+      ) => {
+        if (areaName === 'sync' && changes.darkMode) {
+          const newDarkMode = changes.darkMode.newValue;
+          if (newDarkMode) {
+            overlay.classList.add('dark');
+          } else {
+            overlay.classList.remove('dark');
+          }
+        }
+      };
+      chrome.storage.onChanged.addListener(handleDarkModeChange);
+
+      // Store listener reference for cleanup
+      (overlay as any).__darkModeListener = handleDarkModeChange;
+
+      // Show with animation
+      requestAnimationFrame(() => {
+        overlay.classList.add('show');
+      });
+
+      // Close on overlay click
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          this.closeConfirmDialog(overlay, false);
+        }
+      });
+    });
+  }
+
+  /**
+   * Close confirmation dialog
+   */
+  private closeConfirmDialog(overlay: HTMLElement, confirmed: boolean): void {
+    overlay.classList.remove('show');
+
+    // Remove dark mode listener
+    const listener = (overlay as any).__darkModeListener;
+    if (listener) {
+      chrome.storage.onChanged.removeListener(listener);
+      delete (overlay as any).__darkModeListener;
+    }
+
+    setTimeout(() => {
+      overlay.remove();
+      if (this.confirmResolve) {
+        this.confirmResolve(confirmed);
+        this.confirmResolve = null;
+      }
+    }, 200); // Match transition duration
   }
 
   /**
