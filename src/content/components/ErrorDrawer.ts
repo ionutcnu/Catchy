@@ -865,6 +865,8 @@ export class ErrorDrawer {
       // Create modal overlay
       const overlay = document.createElement('div');
       overlay.className = 'catchy-modal-overlay';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
 
       // Apply dark mode if drawer is dark
       if (this.drawerElement?.classList.contains('dark')) {
@@ -879,11 +881,18 @@ export class ErrorDrawer {
       const modalTitle = document.createElement('h3');
       modalTitle.className = 'catchy-modal-title';
       modalTitle.textContent = title;
+      const titleId = `catchy-modal-title-${Date.now()}`;
+      modalTitle.id = titleId;
 
       // Modal description
       const modalDescription = document.createElement('p');
       modalDescription.className = 'catchy-modal-description';
       modalDescription.textContent = description;
+      const descId = `catchy-modal-desc-${Date.now()}`;
+      modalDescription.id = descId;
+
+      overlay.setAttribute('aria-labelledby', titleId);
+      overlay.setAttribute('aria-describedby', descId);
 
       // Actions container
       const actions = document.createElement('div');
@@ -938,7 +947,19 @@ export class ErrorDrawer {
       // Show with animation
       requestAnimationFrame(() => {
         overlay.classList.add('show');
+        // Set focus to cancel button (first focusable element)
+        cancelBtn.focus();
       });
+
+      // Handle ESC key
+      const handleEscKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          this.closeConfirmDialog(overlay, false);
+        }
+      };
+      document.addEventListener('keydown', handleEscKey);
+      (overlay as any).__escListener = handleEscKey;
 
       // Close on overlay click
       overlay.addEventListener('click', (e) => {
@@ -960,6 +981,13 @@ export class ErrorDrawer {
     if (listener) {
       chrome.storage.onChanged.removeListener(listener);
       delete (overlay as any).__darkModeListener;
+    }
+
+    // Remove ESC listener
+    const escListener = (overlay as any).__escListener;
+    if (escListener) {
+      document.removeEventListener('keydown', escListener);
+      delete (overlay as any).__escListener;
     }
 
     setTimeout(() => {

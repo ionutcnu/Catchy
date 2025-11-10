@@ -44,7 +44,7 @@
   "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
 
   // File explorer settings
-  "explorer.excludeGitIgnore": true,
+  "explorer.excludeGitIgnore": false,
   "files.exclude": {
     "**/node_modules": true,
     "**/dist": true,
