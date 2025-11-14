@@ -26,6 +26,10 @@ export interface ToastOptions {
   onPinToggle?: (id: string, isPinned: boolean) => void; // Callback when pin state changes
   position?: ToastPosition; // Position of toast container (for swipe direction)
   swipeToDismiss?: boolean; // Enable swipe-to-dismiss gesture
+  showIgnoreButton?: boolean; // Show ignore button (based on error count threshold)
+  onIgnore?: (id: string, signature: string, scope: 'session' | 'browser' | 'permanent') => void; // Callback when error is ignored
+  errorSignature?: string; // Error signature for ignore matching
+  ignoreButtonThreshold?: number; // Threshold for showing ignore button
 }
 
 export class Toast {
@@ -34,6 +38,8 @@ export class Toast {
   private options: ToastOptions;
   private autoCloseTimer?: number;
   private counterBadge: HTMLSpanElement | null = null;
+  private ignoreMenu: HTMLDivElement | null = null;
+  private isIgnoreMenuOpen = false;
 
   // Swipe-to-dismiss state
   private startX = 0;
@@ -45,12 +51,12 @@ export class Toast {
 
   constructor(data: ToastData, options: ToastOptions = {}) {
     this.data = data;
+    // Spread all options to preserve callbacks like onIgnore, errorSignature, etc.
     this.options = {
-      autoCloseMs: options.autoCloseMs ?? 5000,
-      onClose: options.onClose,
-      onPinToggle: options.onPinToggle,
-      position: options.position ?? 'bottom-right',
-      swipeToDismiss: options.swipeToDismiss ?? true,
+      autoCloseMs: 5000,
+      position: 'bottom-right',
+      swipeToDismiss: true,
+      ...options, // Spread all options including onIgnore, errorSignature, showIgnoreButton, etc.
     };
 
     this.element = this.createToastElement();
@@ -98,10 +104,19 @@ export class Toast {
       header.appendChild(this.counterBadge);
     }
 
-    // Button container for pin and close buttons
+    // Button container for copy, pin, ignore (conditional), and close buttons
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'catchy-toast-buttons';
 
+    // Copy button (most used - first)
+    const copyButton = document.createElement('button');
+    copyButton.className = 'catchy-toast-copy';
+    copyButton.setAttribute('aria-label', 'Copy error to clipboard');
+    copyButton.innerHTML = this.getCopyIconSVG();
+    copyButton.addEventListener('click', () => this.copyToClipboard());
+    buttonContainer.appendChild(copyButton);
+
+    // Pin button (second)
     const pinButton = document.createElement('button');
     pinButton.className = 'catchy-toast-pin';
     pinButton.setAttribute(
@@ -112,6 +127,20 @@ export class Toast {
     pinButton.addEventListener('click', () => this.togglePin());
     buttonContainer.appendChild(pinButton);
 
+    // Ignore button (conditional - only if threshold met)
+    if (this.options.showIgnoreButton) {
+      const ignoreButton = document.createElement('button');
+      ignoreButton.className = 'catchy-toast-ignore';
+      ignoreButton.setAttribute('aria-label', 'Ignore this error');
+      ignoreButton.innerHTML = this.getIgnoreIconSVG();
+      ignoreButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleIgnoreMenu();
+      });
+      buttonContainer.appendChild(ignoreButton);
+    }
+
+    // Close button (last - safe action)
     const closeButton = document.createElement('button');
     closeButton.className = 'catchy-toast-close';
     closeButton.setAttribute('aria-label', 'Close notification');
@@ -181,6 +210,142 @@ export class Toast {
   }
 
   /**
+   * Get copy icon SVG
+   */
+  private getCopyIconSVG(): string {
+    return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>`;
+  }
+
+  /**
+   * Get ignore icon SVG (eye with slash)
+   */
+  private getIgnoreIconSVG(): string {
+    return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+      <line x1="1" y1="1" x2="23" y2="23"></line>
+    </svg>`;
+  }
+
+  /**
+   * Toggle ignore menu dropdown
+   */
+  private toggleIgnoreMenu(): void {
+    if (this.isIgnoreMenuOpen) {
+      this.closeIgnoreMenu();
+    } else {
+      this.openIgnoreMenu();
+    }
+  }
+
+  /**
+   * Open ignore menu dropdown
+   */
+  private openIgnoreMenu(): void {
+    // Close any existing menu first
+    if (this.ignoreMenu) {
+      this.closeIgnoreMenu();
+    }
+
+    // Create menu
+    this.ignoreMenu = document.createElement('div');
+    this.ignoreMenu.className = 'catchy-ignore-menu';
+
+    // Menu options
+    const options = [
+      { label: 'This session only', scope: 'session' as const, description: 'Until page reload' },
+      { label: 'Until browser restart', scope: 'browser' as const, description: 'Until browser closes' },
+      { label: 'Permanently', scope: 'permanent' as const, description: 'Forever' },
+    ];
+
+    options.forEach((option) => {
+      const item = document.createElement('div');
+      item.className = 'catchy-ignore-menu-item';
+
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'catchy-ignore-menu-label';
+      labelDiv.textContent = option.label;
+
+      const descDiv = document.createElement('div');
+      descDiv.className = 'catchy-ignore-menu-description';
+      descDiv.textContent = option.description;
+
+      item.appendChild(labelDiv);
+      item.appendChild(descDiv);
+
+      item.addEventListener('click', (e) => {
+        console.log('[Catchy Toast] Menu item clicked!', option.scope);
+        e.stopPropagation(); // Prevent event from bubbling
+        this.handleIgnore(option.scope);
+      });
+
+      this.ignoreMenu!.appendChild(item);
+    });
+
+    // Add menu to toast
+    this.element.appendChild(this.ignoreMenu);
+    this.isIgnoreMenuOpen = true;
+
+    // Close menu when clicking outside
+    setTimeout(() => {
+      document.addEventListener('click', this.handleOutsideClick);
+    }, 0);
+  }
+
+  /**
+   * Close ignore menu dropdown
+   */
+  private closeIgnoreMenu(): void {
+    if (this.ignoreMenu) {
+      this.ignoreMenu.remove();
+      this.ignoreMenu = null;
+    }
+    this.isIgnoreMenuOpen = false;
+    document.removeEventListener('click', this.handleOutsideClick);
+  }
+
+  /**
+   * Handle click outside ignore menu to close it
+   */
+  private handleOutsideClick = (e: MouseEvent): void => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.catchy-ignore-menu') && !target.closest('.catchy-toast-ignore')) {
+      this.closeIgnoreMenu();
+    }
+  };
+
+  /**
+   * Handle ignore action for a specific scope
+   */
+  private handleIgnore(scope: 'session' | 'browser' | 'permanent'): void {
+    console.log('[Catchy Toast] handleIgnore called with scope:', scope);
+    const signature = this.options.errorSignature || `${this.data.type}::${this.data.message}`;
+    console.log('[Catchy Toast] Signature:', signature);
+    console.log('[Catchy Toast] onIgnore callback exists:', !!this.options.onIgnore);
+
+    // Close menu and toast
+    this.closeIgnoreMenu();
+
+    // Notify callback
+    if (this.options.onIgnore) {
+      console.log('[Catchy Toast] Calling onIgnore callback...');
+      this.options.onIgnore(this.data.id, signature, scope);
+      console.log('[Catchy Toast] onIgnore callback completed');
+    } else {
+      console.warn('[Catchy Toast] No onIgnore callback provided!');
+    }
+
+    // Close the toast
+    this.close();
+
+    if (import.meta.env.DEV) {
+      console.log('[Catchy Toast] Error ignored:', signature, 'Scope:', scope);
+    }
+  }
+
+  /**
    * Toggle pin state
    */
   public togglePin(): void {
@@ -207,6 +372,36 @@ export class Toast {
 
     // Notify ToastManager
     this.options.onPinToggle?.(this.data.id, this.data.isPinned);
+  }
+
+  /**
+   * Copy error message to clipboard
+   */
+  private async copyToClipboard(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.data.message);
+
+      // Visual feedback - briefly change icon to checkmark
+      const copyButton = this.element.querySelector('.catchy-toast-copy') as HTMLButtonElement;
+      if (copyButton) {
+        const originalIcon = copyButton.innerHTML;
+        copyButton.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>`;
+        copyButton.style.color = '#10b981'; // Green color
+
+        setTimeout(() => {
+          copyButton.innerHTML = originalIcon;
+          copyButton.style.color = '';
+        }, 1500);
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('[Catchy Toast] Error message copied to clipboard:', this.data.message);
+      }
+    } catch (error) {
+      console.error('[Catchy Toast] Failed to copy to clipboard:', error);
+    }
   }
 
   /**
@@ -426,9 +621,44 @@ export class Toast {
   }
 
   /**
-   * Increment the error counter when a duplicate error occurs
+   * Dynamically add ignore button to existing toast
+   * Called when error count crosses the threshold
    */
-  public incrementCounter(): void {
+  public showIgnoreButton(): void {
+    // Check if button already exists
+    const buttonContainer = this.element.querySelector('.catchy-toast-buttons');
+    if (!buttonContainer || buttonContainer.querySelector('.catchy-toast-ignore')) {
+      return; // Already has ignore button
+    }
+
+    // Create ignore button
+    const ignoreButton = document.createElement('button');
+    ignoreButton.className = 'catchy-toast-ignore';
+    ignoreButton.setAttribute('aria-label', 'Ignore this error');
+    ignoreButton.innerHTML = this.getIgnoreIconSVG();
+    ignoreButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleIgnoreMenu();
+    });
+
+    // Insert before close button (Copy → Pin → Ignore → Close)
+    const closeButton = buttonContainer.querySelector('.catchy-toast-close');
+    if (closeButton) {
+      buttonContainer.insertBefore(ignoreButton, closeButton);
+    } else {
+      buttonContainer.appendChild(ignoreButton);
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('[Catchy Toast] Ignore button added dynamically for:', this.data.id);
+    }
+  }
+
+  /**
+   * Increment the error counter when a duplicate error occurs
+   * @returns The new count after incrementing
+   */
+  public incrementCounter(): number {
     // Increment the count
     this.data.count = (this.data.count || 1) + 1;
 
@@ -460,5 +690,7 @@ export class Toast {
     if (timeElement) {
       timeElement.textContent = new Date(this.data.timestamp).toLocaleTimeString();
     }
+
+    return this.data.count;
   }
 }

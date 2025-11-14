@@ -24,6 +24,7 @@ export default function PopupApp() {
   const [isEnabledForSite, setIsEnabledForSite] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [ignoredErrorsCount, setIgnoredErrorsCount] = useState(0);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -117,6 +118,7 @@ export default function PopupApp() {
   // Load settings on mount
   useEffect(() => {
     loadSettings();
+    loadIgnoredErrorsCount();
   }, [loadSettings]);
 
   async function handleToggleGlobal() {
@@ -258,6 +260,75 @@ export default function PopupApp() {
         console.error('[Catchy Popup] Failed to save dark mode preference:', chrome.runtime.lastError);
       }
     });
+  }
+
+  // Load ignored errors count from current tab's sessionStorage
+  async function loadIgnoredErrorsCount() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab.id) return;
+
+      // Execute script in the page context to read sessionStorage
+      const results = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: () => {
+          const browserIgnores = sessionStorage.getItem('catchy-ignore-browser');
+          if (browserIgnores) {
+            try {
+              const list: string[] = JSON.parse(browserIgnores);
+              return list.length;
+            } catch {
+              return 0;
+            }
+          }
+          return 0;
+        },
+      });
+
+      if (results && results[0]?.result !== undefined) {
+        setIgnoredErrorsCount(results[0].result as number);
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('[Catchy Popup] Failed to load ignored errors count:', error);
+      }
+    }
+  }
+
+  // Clear all ignored errors for current tab
+  async function handleClearIgnoredErrors() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab.id) return;
+
+      // Execute script in the page context to clear sessionStorage
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: () => {
+          sessionStorage.removeItem('catchy-ignore-browser');
+        },
+      });
+
+      setIgnoredErrorsCount(0);
+
+      // Send message to content script to reload page for session ignores to clear
+      try {
+        await chrome.tabs.sendMessage(tab.id, { type: 'CLEAR_SESSION_IGNORES' });
+      } catch (error) {
+        // Content script might not be loaded yet
+        if (import.meta.env.DEV) {
+          console.warn('[Catchy Popup] Content script not available:', error);
+        }
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('[Catchy Popup] Cleared all ignored errors');
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('[Catchy Popup] Failed to clear ignored errors:', error);
+      }
+    }
   }
 
   return (
@@ -428,6 +499,81 @@ export default function PopupApp() {
                   </svg>
                   {CONSTANTS.BUTTON_ERROR_HISTORY}
                 </Button>
+
+                {/* Ignored Errors Info */}
+                {isEnabledForSite && (
+                  <div className="rounded-lg border border-border bg-muted/50 p-3">
+                    <div className="flex items-start gap-2">
+                      <svg
+                        className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                        />
+                        <line x1="1" y1="1" x2="23" y2="23" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                      </svg>
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-foreground mb-1">Ignore Repetitive Errors</p>
+                        <p className="text-xs text-muted-foreground">
+                          When an error appears 3+ times, you can ignore it for this session, browser session, or permanently.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Ignored Errors Management */}
+                {isEnabledForSite && ignoredErrorsCount > 0 && (
+                  <div className="rounded-lg border border-orange-500/30 bg-orange-500/10 p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="h-4 w-4 text-orange-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                          />
+                          <line x1="1" y1="1" x2="23" y2="23" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                        </svg>
+                        <span className="text-sm font-medium text-orange-500">
+                          {ignoredErrorsCount} {ignoredErrorsCount === 1 ? 'Error' : 'Errors'} Ignored
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full text-orange-600 border-orange-500/30 hover:bg-orange-500/20"
+                      onClick={handleClearIgnoredErrors}
+                    >
+                      <svg
+                        className="mr-2 h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Clear All Ignored Errors
+                    </Button>
+                  </div>
+                )}
 
                 {/* Settings Button */}
                 <Button variant="outline" className="w-full" onClick={handleOpenOptions}>

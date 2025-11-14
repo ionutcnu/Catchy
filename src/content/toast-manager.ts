@@ -22,6 +22,11 @@ export class ToastManager {
   private customWidth = 400; // Custom width in pixels (when toastSize is 'custom')
   private customHeight = 100; // Custom height in pixels (when toastSize is 'custom')
   private readonly STORAGE_KEY_PREFIX = 'catchy-pinned-toasts-'; // LocalStorage key prefix
+  private globalOnIgnore?: (
+    toastId: string,
+    signature: string,
+    scope: 'session' | 'browser' | 'permanent'
+  ) => void; // Global onIgnore callback for all toasts
 
   /**
    * Initialize the Shadow DOM and inject styles
@@ -330,6 +335,90 @@ export class ToastManager {
         opacity: 1;
       }
 
+      /* Copy Button */
+      .catchy-toast-copy {
+        background: none;
+        border: none;
+        color: var(--catchy-text);
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s, transform 0.2s, color 0.3s;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .catchy-toast-copy:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      /* Ignore Button */
+      .catchy-toast-ignore {
+        background: none;
+        border: none;
+        color: var(--catchy-text);
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s, transform 0.2s;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .catchy-toast-ignore:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      /* Ignore Menu Dropdown */
+      .catchy-ignore-menu {
+        position: absolute;
+        bottom: 100%;
+        right: 0;
+        margin-bottom: 8px;
+        background: rgba(0, 0, 0, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 4px;
+        min-width: 200px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 999999;
+        pointer-events: auto;
+      }
+
+      .catchy-ignore-menu-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+
+      .catchy-ignore-menu-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .catchy-ignore-menu-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--catchy-text);
+        margin-bottom: 2px;
+      }
+
+      .catchy-ignore-menu-description {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
       /* Close Button */
       .catchy-toast-close {
         background: none;
@@ -472,11 +561,22 @@ export class ToastManager {
 
       if (errorKey === existingKey) {
         // Found duplicate - increment counter instead of creating new toast
-        existingToast.incrementCounter();
+        const newCount = existingToast.incrementCounter();
+
+        // Check if we just crossed the threshold to show ignore button
+        const threshold = options?.ignoreButtonThreshold ?? 3;
+        if (newCount >= threshold) {
+          existingToast.showIgnoreButton();
+        }
+
         if (import.meta.env.DEV) {
           console.log(
             '[Catchy ToastManager] Duplicate error, incrementing counter for:',
-            existingId
+            existingId,
+            'Count:',
+            newCount,
+            'Threshold:',
+            threshold
           );
         }
         return existingId;
@@ -510,6 +610,7 @@ export class ToastManager {
       ...options,
       position: this.position, // Pass current position for swipe direction
       swipeToDismiss: this.swipeToDismiss, // Pass swipe-to-dismiss setting
+      onIgnore: options?.onIgnore || this.globalOnIgnore, // Use provided callback or global fallback
       onClose: (closedId) => {
         this.toasts.delete(closedId);
         // Update close-all button visibility after toast removal
@@ -849,6 +950,19 @@ export class ToastManager {
     }
     this.customHeight = height;
     this.updateCSSVariables();
+  }
+
+  /**
+   * Set the global onIgnore callback for all toasts
+   * This will be used as a fallback when individual toasts don't have their own onIgnore callback
+   */
+  public setOnIgnore(
+    callback: (toastId: string, signature: string, scope: 'session' | 'browser' | 'permanent') => void
+  ): void {
+    this.globalOnIgnore = callback;
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Global onIgnore callback set');
+    }
   }
 
   /**

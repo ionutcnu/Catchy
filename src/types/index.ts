@@ -78,6 +78,7 @@ export interface CatchySettings {
     customHeight?: number; // Custom height in pixels (when toastSize is 'custom')
     maxHistorySize: number; // Max errors to keep in history (50-500)
     drawerShortcut: string; // Keyboard shortcut to open error drawer (e.g., "Alt+E")
+    ignoreButtonThreshold: number; // Show ignore button after error appears X times (default: 3)
 
     // Visual customization
     backgroundColor: string; // Toast background color (hex/hsl)
@@ -115,7 +116,10 @@ export type ExtensionMessage =
   | { type: 'UPDATE_SETTINGS'; settings: Partial<CatchySettings> }
   | { type: 'TOGGLE_ENABLED' }
   | { type: 'CLEAR_ERRORS' }
-  | { type: 'OPEN_DRAWER' };
+  | { type: 'OPEN_DRAWER' }
+  | { type: 'IGNORE_ERROR'; signature: string; scope: 'session' | 'browser' | 'permanent' }
+  | { type: 'GET_IGNORED_COUNTS' }
+  | { type: 'CLEAR_IGNORED'; scope: 'session' | 'browser' | 'permanent' };
 
 /**
  * Default settings for first-time users
@@ -142,6 +146,7 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     customHeight: 100,
     maxHistorySize: 200,
     drawerShortcut: 'Alt+E', // Default keyboard shortcut
+    ignoreButtonThreshold: 3, // Show ignore button after 3 occurrences
 
     // Visual customization defaults
     backgroundColor: '#dc2626', // Red-600 (error color)

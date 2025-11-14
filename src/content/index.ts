@@ -43,6 +43,7 @@ interface CatchySettings {
     customHeight?: number;
     maxHistorySize: number;
     drawerShortcut: string;
+    ignoreButtonThreshold: number;
     backgroundColor: string;
     textColor: string;
     borderRadius: number;
@@ -79,6 +80,7 @@ const DEFAULT_SETTINGS: CatchySettings = {
     customHeight: 100,
     maxHistorySize: 200,
     drawerShortcut: 'Alt+E',
+    ignoreButtonThreshold: 3,
     backgroundColor: '#dc2626',
     textColor: '#ffffff',
     borderRadius: 8,
@@ -110,12 +112,168 @@ let enabledErrorTypes = {
   network: false,
 };
 let drawerShortcut = 'Alt+E'; // Default keyboard shortcut for opening drawer
+let ignoreButtonThreshold = 3; // Show ignore button after X error occurrences
+
+/**
+ * Error ignore tracking (3 scopes: session, browser, permanent)
+ */
+let sessionIgnoreList: Set<string> = new Set(); // Session-only ignores (clears on page reload)
+let errorCountsPerTab: Map<string, number> = new Map(); // Error signature -> count
+const TAB_ID = `tab-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`; // Unique ID for this tab/page session
+const ERROR_COUNTS_STORAGE_KEY = `catchy-error-counts-${TAB_ID}`;
+const BROWSER_IGNORE_STORAGE_KEY = 'catchy-ignore-browser'; // sessionStorage key for browser-scope ignores
+
+/**
+ * Track if extension context has been invalidated
+ * Once invalid, we stop trying chrome API calls to avoid error spam
+ */
+let extensionContextInvalidated = false;
+
+/**
+ * Check if extension context is still valid
+ * During development, extension reloads invalidate the old context
+ */
+function isExtensionContextValid(): boolean {
+  if (extensionContextInvalidated) {
+    return false;
+  }
+
+  try {
+    // Try to access chrome.runtime.id - if context is invalid, this will throw
+    if (!chrome?.runtime?.id) {
+      extensionContextInvalidated = true;
+      return false;
+    }
+    return true;
+  } catch {
+    extensionContextInvalidated = true;
+    return false;
+  }
+}
+
+/**
+ * Generate error signature for deduplication and ignore matching
+ * Format: type::message (ignores file/line variations)
+ */
+function getErrorSignature(error: { type: string; message: string }): string {
+  return `${error.type}::${error.message}`;
+}
+
+/**
+ * Check if error should be shown (not in any ignore list)
+ */
+function shouldShowError(signature: string): boolean {
+  // Check session ignores
+  if (sessionIgnoreList.has(signature)) {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy Content] Error blocked by session ignore:', signature);
+    }
+    return false;
+  }
+
+  // Check browser-scope ignores (sessionStorage)
+  try {
+    const browserIgnores = sessionStorage.getItem(BROWSER_IGNORE_STORAGE_KEY);
+    if (browserIgnores) {
+      const ignoreList: string[] = JSON.parse(browserIgnores);
+      if (ignoreList.includes(signature)) {
+        if (import.meta.env.DEV) {
+          console.log('[Catchy Content] Error blocked by browser ignore:', signature);
+        }
+        return false;
+      }
+    }
+  } catch (error) {
+    console.error('[Catchy Content] Failed to check browser ignores:', error);
+  }
+
+  // TODO: Check permanent ignores (ignoreRules) - will implement when adding ignore button
+
+  if (import.meta.env.DEV) {
+    console.log('[Catchy Content] Error NOT ignored, will show:', signature);
+  }
+  return true; // Not ignored
+}
+
+/**
+ * Load error counts from storage for this tab
+ */
+async function loadErrorCounts() {
+  if (!isExtensionContextValid()) {
+    // Silently skip if context is invalid
+    return;
+  }
+
+  try {
+    const result = await chrome.storage.local.get([ERROR_COUNTS_STORAGE_KEY]);
+    const counts = result[ERROR_COUNTS_STORAGE_KEY] || {};
+    errorCountsPerTab = new Map(Object.entries(counts));
+    console.log('[Catchy Content] Loaded error counts:', errorCountsPerTab.size, 'entries');
+  } catch (error) {
+    // Check if this is the context invalidation error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('Extension context invalidated')) {
+      extensionContextInvalidated = true;
+      if (import.meta.env.DEV) {
+        console.warn('[Catchy Content] Extension context invalidated during load');
+      }
+    } else {
+      console.error('[Catchy Content] Failed to load error counts:', error);
+    }
+  }
+}
+
+/**
+ * Save error counts to storage for persistence across page reloads
+ */
+async function saveErrorCounts() {
+  if (!isExtensionContextValid()) {
+    // Silently skip if context is invalid - this is normal during development
+    return;
+  }
+
+  try {
+    const counts = Object.fromEntries(errorCountsPerTab);
+    await chrome.storage.local.set({ [ERROR_COUNTS_STORAGE_KEY]: counts });
+  } catch (error) {
+    // Check if this is the context invalidation error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('Extension context invalidated')) {
+      extensionContextInvalidated = true;
+      // Only log in dev mode to avoid console spam
+      if (import.meta.env.DEV) {
+        console.warn('[Catchy Content] Extension context invalidated - storage operations disabled');
+      }
+    } else {
+      // Log other errors normally
+      console.error('[Catchy Content] Failed to save error counts:', error);
+    }
+  }
+}
+
+/**
+ * Increment error count for a signature
+ */
+function incrementErrorCount(signature: string): number {
+  const currentCount = errorCountsPerTab.get(signature) || 0;
+  const newCount = currentCount + 1;
+  errorCountsPerTab.set(signature, newCount);
+  saveErrorCounts(); // Persist to storage
+  return newCount;
+}
 
 /**
  * Load settings from Chrome storage and update our cache
  * This runs once when the content script first loads
  */
 async function loadSettings() {
+  if (!isExtensionContextValid()) {
+    console.warn('[Catchy Content] Extension context invalid, using default settings');
+    isGloballyEnabled = false;
+    isEnabledForCurrentSite = false;
+    return;
+  }
+
   try {
     const result = await chrome.storage.sync.get(['settings']);
     const settings = result.settings || DEFAULT_SETTINGS;
@@ -201,6 +359,11 @@ async function loadSettings() {
       drawerShortcut = settings.theme.drawerShortcut;
     }
 
+    // Apply ignore button threshold setting
+    if (settings.theme?.ignoreButtonThreshold !== undefined) {
+      ignoreButtonThreshold = settings.theme.ignoreButtonThreshold;
+    }
+
     console.log(
       '[Catchy Content] Settings loaded, globally enabled:',
       isGloballyEnabled,
@@ -231,17 +394,26 @@ async function loadSettings() {
  * We create a <script> tag that loads inject.js
  */
 function injectScript() {
-  const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('content/inject.js');
-  // Note: inject.js is built as IIFE, not a module, so no type="module"
-  script.onload = () => {
-    // Remove script tag after it executes (cleanup)
-    script.remove();
-  };
+  if (!isExtensionContextValid()) {
+    console.error('[Catchy Content] Cannot inject script - extension context invalid');
+    return;
+  }
 
-  // Inject at the very beginning of the page
-  (document.head || document.documentElement).appendChild(script);
-  console.log('[Catchy Content] Inject script added to page');
+  try {
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('content/inject.js');
+    // Note: inject.js is built as IIFE, not a module, so no type="module"
+    script.onload = () => {
+      // Remove script tag after it executes (cleanup)
+      script.remove();
+    };
+
+    // Inject at the very beginning of the page
+    (document.head || document.documentElement).appendChild(script);
+    console.log('[Catchy Content] Inject script added to page');
+  } catch (error) {
+    console.error('[Catchy Content] Failed to inject script:', error);
+  }
 }
 
 /**
@@ -319,7 +491,16 @@ window.addEventListener('message', (event) => {
       return;
     }
 
-    // Check 3: Error type filter
+    // Check 3: Filter out extension context invalidation errors (happen during extension reload)
+    const errorMessage = event.data.error.message || '';
+    if (errorMessage.includes('Extension context invalidated')) {
+      if (import.meta.env.DEV) {
+        console.log('[Catchy Content] Filtering out extension context invalidation error');
+      }
+      return;
+    }
+
+    // Check 4: Error type filter
     const errorType = event.data.error.type;
     const isErrorTypeEnabled = isErrorTypeAllowed(errorType);
 
@@ -331,6 +512,53 @@ window.addEventListener('message', (event) => {
     showToast(event.data.error);
   }
 });
+
+/**
+ * Handle error ignore action from Toast component
+ */
+function handleErrorIgnore(
+  toastId: string,
+  signature: string,
+  scope: 'session' | 'browser' | 'permanent'
+): void {
+  console.log('[Catchy Content] === IGNORING ERROR ===');
+  console.log('[Catchy Content] Scope:', scope);
+  console.log('[Catchy Content] Signature to ignore:', signature);
+  console.log('[Catchy Content] Signature length:', signature.length);
+  console.log('[Catchy Content] Signature characters:', signature.split('').map(c => c.charCodeAt(0)));
+
+  if (scope === 'session') {
+    // Add to session ignore list (clears on page reload)
+    sessionIgnoreList.add(signature);
+    console.log('[Catchy Content] ✓ Added to session ignore list');
+    console.log('[Catchy Content] Total session ignores:', sessionIgnoreList.size);
+    console.log('[Catchy Content] List contents:', Array.from(sessionIgnoreList));
+  } else if (scope === 'browser') {
+    // Add to browser-scope ignore list (sessionStorage - clears on browser close)
+    try {
+      const existing = sessionStorage.getItem(BROWSER_IGNORE_STORAGE_KEY);
+      const ignoreList: string[] = existing ? JSON.parse(existing) : [];
+      if (!ignoreList.includes(signature)) {
+        ignoreList.push(signature);
+        sessionStorage.setItem(BROWSER_IGNORE_STORAGE_KEY, JSON.stringify(ignoreList));
+        console.log('[Catchy Content] Added to browser ignore list. Total browser ignores:', ignoreList.length);
+      }
+    } catch (error) {
+      console.error('[Catchy Content] Failed to save browser ignore:', error);
+    }
+  } else if (scope === 'permanent') {
+    // Add to permanent ignore list (chrome.storage.sync ignoreRules)
+    // TODO: Implement permanent ignore rules
+    // For now, just use browser scope as fallback
+    console.log('[Catchy Content] Permanent ignore not yet implemented, using browser scope:', signature);
+    handleErrorIgnore(toastId, signature, 'browser');
+  }
+
+  // Remove from error counts since it's now ignored
+  errorCountsPerTab.delete(signature);
+  saveErrorCounts();
+  console.log('[Catchy Content] Removed error count for ignored signature');
+}
 
 /**
  * Step 3: Show a toast notification for the error
@@ -346,6 +574,25 @@ function showToast(error: {
   timestamp: number;
   stack?: string;
 }) {
+  // Generate error signature for ignore checking and counting
+  const signature = getErrorSignature(error);
+
+  console.log('[Catchy Content] === Checking error signature ===');
+  console.log('[Catchy Content] Generated signature:', signature);
+  console.log('[Catchy Content] Session ignore list:', Array.from(sessionIgnoreList));
+  console.log('[Catchy Content] Browser ignore list (sessionStorage):', sessionStorage.getItem(BROWSER_IGNORE_STORAGE_KEY));
+
+  // Check if error is ignored
+  if (!shouldShowError(signature)) {
+    console.log('[Catchy Content] ✓ Error ignored:', signature);
+    return;
+  }
+
+  console.log('[Catchy Content] ✗ Error NOT ignored, will show toast');
+
+  // Increment error count for this signature
+  const errorCount = incrementErrorCount(signature);
+
   // Create a complete CatchyError object
   const catchyError: CatchyError = {
     id: `error-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
@@ -357,24 +604,38 @@ function showToast(error: {
     timestamp: error.timestamp,
     url: window.location.href,
     stack: error.stack,
-    count: 1,
+    count: errorCount, // Use the tracked count
   };
 
   // Add to error history
   errorHistoryManager.add(catchyError);
 
-  // Show toast notification
-  toastManager.showToast({
-    type: catchyError.type,
-    message: catchyError.message,
-    file: catchyError.file,
-    line: catchyError.line,
-    column: catchyError.column,
-    timestamp: catchyError.timestamp,
-  });
+  // Show toast notification with count (for conditional ignore button)
+  toastManager.showToast(
+    {
+      type: catchyError.type,
+      message: catchyError.message,
+      file: catchyError.file,
+      line: catchyError.line,
+      column: catchyError.column,
+      timestamp: catchyError.timestamp,
+      count: errorCount, // Pass count to toast
+    },
+    {
+      showIgnoreButton: errorCount >= ignoreButtonThreshold, // Show ignore button if threshold met
+      errorSignature: signature, // Pass signature for ignore matching
+      onIgnore: handleErrorIgnore, // Callback when error is ignored
+      ignoreButtonThreshold, // Pass threshold for dynamic button showing
+    }
+  );
 
   if (import.meta.env.DEV) {
-    console.log('[Catchy Content] Error added to history and toast displayed');
+    console.log(
+      '[Catchy Content] Error added to history and toast displayed. Count:',
+      errorCount,
+      'Signature:',
+      signature
+    );
   }
 }
 
@@ -483,6 +744,12 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       console.log('[Catchy Content] Drawer shortcut changed to:', newSettings.theme.drawerShortcut);
     }
 
+    // Update ignore button threshold if changed
+    if (newSettings.theme?.ignoreButtonThreshold !== undefined) {
+      ignoreButtonThreshold = newSettings.theme.ignoreButtonThreshold;
+      console.log('[Catchy Content] Ignore button threshold changed to:', newSettings.theme.ignoreButtonThreshold);
+    }
+
     console.log(
       '[Catchy Content] Settings changed - globally:',
       wasGloballyEnabled,
@@ -512,31 +779,50 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 /**
  * Listen for messages from popup or background script
  */
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.type === 'OPEN_DRAWER') {
-    if (errorDrawer) {
-      errorDrawer.open();
-      console.log('[Catchy Content] Error drawer opened via message from popup');
-      sendResponse({ success: true });
-    } else {
-      console.warn('[Catchy Content] Error drawer not initialized yet');
-      sendResponse({ success: false, error: 'Drawer not initialized' });
+if (isExtensionContextValid()) {
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message.type === 'OPEN_DRAWER') {
+      if (errorDrawer) {
+        errorDrawer.open();
+        console.log('[Catchy Content] Error drawer opened via message from popup');
+        sendResponse({ success: true });
+      } else {
+        console.warn('[Catchy Content] Error drawer not initialized yet');
+        sendResponse({ success: false, error: 'Drawer not initialized' });
+      }
+      return true; // Keep message channel open for async response
     }
-    return true; // Keep message channel open for async response
-  }
-  return false; // Let other listeners handle other message types
-});
+
+    if (message.type === 'CLEAR_SESSION_IGNORES') {
+      // Clear session-level ignore list (in-memory)
+      sessionIgnoreList.clear();
+      if (import.meta.env.DEV) {
+        console.log('[Catchy Content] Session ignore list cleared via message');
+      }
+      sendResponse({ success: true });
+      return true;
+    }
+
+    return false; // Let other listeners handle other message types
+  });
+}
 
 /**
  * Initialize extension when DOM is ready
  */
 async function initializeExtension() {
+  // Load error counts from storage (for threshold-based ignore button)
+  await loadErrorCounts();
+
   // CRITICAL: Load settings FIRST before initializing ToastManager
   // This ensures the position is set before the container is created
   await loadSettings();
 
   // Initialize ToastManager with Shadow DOM (will use the position from settings)
   toastManager.initialize();
+
+  // Set the global onIgnore callback for all toasts (including restored pinned toasts)
+  toastManager.setOnIgnore(handleErrorIgnore);
 
   // Load pinned toasts if persistence is enabled
   toastManager.loadPinnedToasts();
@@ -548,11 +834,13 @@ async function initializeExtension() {
     errorDrawer.initialize();
 
     // Check dark mode setting and apply to drawer
-    chrome.storage.sync.get(['darkMode'], (result) => {
-      if (result.darkMode && errorDrawer) {
-        errorDrawer.setDarkMode(result.darkMode);
-      }
-    });
+    if (isExtensionContextValid()) {
+      chrome.storage.sync.get(['darkMode'], (result) => {
+        if (result.darkMode && errorDrawer) {
+          errorDrawer.setDarkMode(result.darkMode);
+        }
+      });
+    }
 
     console.log('[Catchy Content] Error drawer initialized');
   }
