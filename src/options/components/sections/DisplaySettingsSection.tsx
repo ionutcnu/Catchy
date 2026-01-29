@@ -114,7 +114,12 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                 <p className="text-sm font-medium mb-3">Custom dimensions</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="custom-width" className="text-xs text-muted-foreground block mb-1">Width (px)</label>
+                    <label
+                      htmlFor="custom-width"
+                      className="text-xs text-muted-foreground block mb-1"
+                    >
+                      Width (px)
+                    </label>
                     <input
                       id="custom-width"
                       type="number"
@@ -137,7 +142,12 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                     />
                   </div>
                   <div>
-                    <label htmlFor="custom-height" className="text-xs text-muted-foreground block mb-1">Height (px)</label>
+                    <label
+                      htmlFor="custom-height"
+                      className="text-xs text-muted-foreground block mb-1"
+                    >
+                      Height (px)
+                    </label>
                     <input
                       id="custom-height"
                       type="number"

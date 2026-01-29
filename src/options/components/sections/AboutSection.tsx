@@ -10,9 +10,7 @@ export function AboutSection() {
             <span className="title-number">09</span>
             <span className="title-text">About Catchy</span>
           </CardTitle>
-          <CardDescription>
-            A modern Chrome extension for tracking console errors
-          </CardDescription>
+          <CardDescription>A modern Chrome extension for tracking console errors</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
@@ -57,8 +55,8 @@ export function AboutSection() {
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
             Version 0.1.0 introduces error history drawer with up to 200 errors per session,
-            customizable keyboard shortcuts (Alt+E), dark mode support, per-site settings,
-            selective error type toggles, and swipe-to-dismiss gestures.
+            customizable keyboard shortcuts (Alt+E), dark mode support, per-site settings, selective
+            error type toggles, and swipe-to-dismiss gestures.
           </p>
           <a
             href="https://github.com/ionutcnu/Catchy/blob/main/CHANGELOG.md"

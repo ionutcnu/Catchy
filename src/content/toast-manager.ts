@@ -906,7 +906,12 @@ export class ToastManager {
     if (import.meta.env.DEV) {
       console.log('[Catchy ToastManager] CSS variables updated for size:', this.toastSize);
       if (this.toastSize === 'custom') {
-        console.log('[Catchy ToastManager] Custom dimensions:', this.customWidth, 'x', this.customHeight);
+        console.log(
+          '[Catchy ToastManager] Custom dimensions:',
+          this.customWidth,
+          'x',
+          this.customHeight
+        );
       }
     }
   }

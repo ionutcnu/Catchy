@@ -23,9 +23,7 @@ export function SliderControl({
     <div>
       <div className="flex justify-between items-center mb-2">
         <div className="text-sm font-medium">{label}</div>
-        <span className="text-sm font-mono text-muted-foreground">
-          {displayValue ?? value}
-        </span>
+        <span className="text-sm font-mono text-muted-foreground">{displayValue ?? value}</span>
       </div>
       <input
         type="range"
@@ -36,9 +34,7 @@ export function SliderControl({
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
       />
-      {helperText && (
-        <p className="text-xs text-muted-foreground mt-1">{helperText}</p>
-      )}
+      {helperText && <p className="text-xs text-muted-foreground mt-1">{helperText}</p>}
     </div>
   );
 }

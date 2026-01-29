@@ -1,21 +1,49 @@
-import { useSettings } from './hooks/useSettings';
+import { useState } from 'react';
 import { Header } from './components/Header';
-import { GlobalControlSection } from './components/sections/GlobalControlSection';
-import { ToastPositionSection } from './components/sections/ToastPositionSection';
-import { ErrorTypesSection } from './components/sections/ErrorTypesSection';
-import { PerSiteSection } from './components/sections/PerSiteSection';
+import { Sidebar } from './components/Sidebar';
+import { AboutSection } from './components/sections/AboutSection';
 import { DisplaySettingsSection } from './components/sections/DisplaySettingsSection';
+import { ErrorTypesSection } from './components/sections/ErrorTypesSection';
+import { GlobalControlSection } from './components/sections/GlobalControlSection';
 import { HistorySection } from './components/sections/HistorySection';
 import { IgnoredErrorsSection } from './components/sections/IgnoredErrorsSection';
+import { PerSiteSection } from './components/sections/PerSiteSection';
+import { ToastPositionSection } from './components/sections/ToastPositionSection';
 import { VisualCustomizationSection } from './components/sections/VisualCustomizationSection';
-import { AboutSection } from './components/sections/AboutSection';
+import { useSettings } from './hooks/useSettings';
 
 export default function OptionsApp() {
   const { settings, saved, saveError, isDarkMode, saveSettings, toggleDarkMode } = useSettings();
+  const [activeSection, setActiveSection] = useState('global');
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'global':
+        return <GlobalControlSection settings={settings} onSave={saveSettings} />;
+      case 'position':
+        return <ToastPositionSection settings={settings} onSave={saveSettings} />;
+      case 'errors':
+        return <ErrorTypesSection settings={settings} onSave={saveSettings} />;
+      case 'persite':
+        return <PerSiteSection settings={settings} onSave={saveSettings} />;
+      case 'display':
+        return <DisplaySettingsSection settings={settings} onSave={saveSettings} />;
+      case 'history':
+        return <HistorySection settings={settings} onSave={saveSettings} />;
+      case 'ignored':
+        return <IgnoredErrorsSection />;
+      case 'visual':
+        return <VisualCustomizationSection settings={settings} onSave={saveSettings} />;
+      case 'about':
+        return <AboutSection />;
+      default:
+        return <GlobalControlSection settings={settings} onSave={saveSettings} />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background settings-container">
-      <div className="container max-w-4xl mx-auto py-12 px-4">
+      <div className="container max-w-7xl mx-auto py-12 px-4">
         <Header
           isDarkMode={isDarkMode}
           onToggleDarkMode={toggleDarkMode}
@@ -23,16 +51,9 @@ export default function OptionsApp() {
           saveError={saveError}
         />
 
-        <div className="space-y-6">
-          <GlobalControlSection settings={settings} onSave={saveSettings} />
-          <ToastPositionSection settings={settings} onSave={saveSettings} />
-          <ErrorTypesSection settings={settings} onSave={saveSettings} />
-          <PerSiteSection settings={settings} onSave={saveSettings} />
-          <DisplaySettingsSection settings={settings} onSave={saveSettings} />
-          <HistorySection settings={settings} onSave={saveSettings} />
-          <IgnoredErrorsSection />
-          <VisualCustomizationSection settings={settings} onSave={saveSettings} />
-          <AboutSection />
+        <div className="settings-layout">
+          <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+          <main className="settings-content">{renderSection()}</main>
         </div>
       </div>
     </div>
