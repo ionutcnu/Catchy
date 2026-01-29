@@ -24,9 +24,7 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
           <span className="title-number">02</span>
           <span className="title-text">Toast Position</span>
         </CardTitle>
-        <CardDescription>
-          Choose where error notifications appear on your screen
-        </CardDescription>
+        <CardDescription>Choose where error notifications appear on your screen</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
@@ -42,9 +40,7 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
                     : 'border-border hover:border-primary/50'
                 }`}
               >
-                <div className="text-sm font-medium capitalize">
-                  {position.replace(/-/g, ' ')}
-                </div>
+                <div className="text-sm font-medium capitalize">{position.replace(/-/g, ' ')}</div>
                 <div className="text-xs text-muted-foreground mt-1">
                   {position === 'top-left' && 'Top left corner'}
                   {position === 'top-right' && 'Top right corner'}
@@ -54,6 +50,24 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
               </button>
             )
           )}
+        </div>
+
+        {/* Visual Preview */}
+        <div className="mt-6 relative w-full h-48 bg-muted/30 rounded-lg border-2 border-dashed border-border overflow-hidden">
+          <div
+            className="absolute w-24 h-14 bg-primary/20 border-2 border-primary rounded flex items-center justify-center text-xs font-medium transition-all duration-300"
+            style={{
+              top: settings.theme.position.startsWith('top') ? '12px' : 'auto',
+              bottom: settings.theme.position.startsWith('bottom') ? '12px' : 'auto',
+              left: settings.theme.position.endsWith('left') ? '12px' : 'auto',
+              right: settings.theme.position.endsWith('right') ? '12px' : 'auto',
+            }}
+          >
+            Toast
+          </div>
+          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+            Live Preview
+          </span>
         </div>
 
         {/* Swipe to Dismiss Toggle */}

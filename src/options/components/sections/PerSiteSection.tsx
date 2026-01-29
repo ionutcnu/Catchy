@@ -11,6 +11,39 @@ interface PerSiteSectionProps {
 export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
   const [newSiteHostname, setNewSiteHostname] = useState('');
 
+  // Normalize hostname helper
+  const normalizeHostname = (input: string): string => {
+    if (!input.trim()) return '';
+
+    let processedInput = input.trim();
+    if (!processedInput.match(/^https?:\/\//)) {
+      processedInput = `https://${processedInput}`;
+    }
+
+    try {
+      const url = new URL(processedInput);
+      return url.hostname.replace(/^www\./, '').toLowerCase();
+    } catch {
+      return processedInput
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+        .replace(/\/.*$/, '')
+        .toLowerCase();
+    }
+  };
+
+  // Check if hostname is valid
+  const isValidHostname = (input: string): boolean => {
+    const normalized = normalizeHostname(input);
+    return normalized.length > 0 && normalized.includes('.');
+  };
+
+  // Check if hostname already exists
+  const isDuplicate = (input: string): boolean => {
+    const normalized = normalizeHostname(input);
+    return normalized in settings.perSiteSettings;
+  };
+
   // Add new site to per-site settings
   const handleAddSite = () => {
     if (!newSiteHostname.trim()) return;
@@ -80,8 +113,7 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
           <span className="title-text">Per-Site Settings</span>
         </CardTitle>
         <CardDescription>
-          Control which websites Catchy is enabled on. Add sites to customize behavior per
-          domain.
+          Control which websites Catchy is enabled on. Add sites to customize behavior per domain.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -106,6 +138,37 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
               Add Site
             </button>
           </div>
+
+          {/* Validation Feedback */}
+          {newSiteHostname.trim() && (
+            <div className="space-y-2">
+              {isValidHostname(newSiteHostname) ? (
+                <div className="text-xs flex items-center gap-1">
+                  <span className="text-green-600">✓</span>
+                  <span className="text-green-600">
+                    Will be saved as:{' '}
+                    <code className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded font-mono">
+                      {normalizeHostname(newSiteHostname)}
+                    </code>
+                  </span>
+                </div>
+              ) : (
+                <div className="text-xs flex items-center gap-1">
+                  <span className="text-destructive">✗</span>
+                  <span className="text-destructive">
+                    Invalid hostname format (must include a domain extension like .com)
+                  </span>
+                </div>
+              )}
+
+              {isValidHostname(newSiteHostname) && isDuplicate(newSiteHostname) && (
+                <div className="text-xs flex items-center gap-1">
+                  <span className="text-orange-600">⚠️</span>
+                  <span className="text-orange-600">This site is already configured</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Sites List */}
           {Object.keys(settings.perSiteSettings).length === 0 ? (

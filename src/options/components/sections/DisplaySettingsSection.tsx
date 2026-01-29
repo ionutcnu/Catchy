@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { SliderControl } from '../SliderControl';
 import type { CatchySettings } from '@/types';
+import { HybridSliderInput } from '../HybridSliderInput';
 
 interface DisplaySettingsSectionProps {
   settings: CatchySettings;
@@ -15,37 +15,50 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
           <span className="title-number">05</span>
           <span className="title-text">Display Settings</span>
         </CardTitle>
-        <CardDescription>
-          Control how many toasts appear and how they behave
-        </CardDescription>
+        <CardDescription>Control how many toasts appear and how they behave</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Max Toasts Slider */}
-          <SliderControl
-            label="Max toasts on screen"
-            value={settings.theme.maxToasts}
-            min={1}
-            max={10}
-            onChange={(value) => {
-              onSave({
-                ...settings,
-                theme: {
-                  ...settings.theme,
-                  maxToasts: value,
-                },
-              });
-            }}
-            helperText="Maximum number of error toasts visible at once"
-          />
+          {/* Max Toasts Preset Buttons */}
+          <div>
+            <div className="text-sm font-medium mb-2">Max toasts on screen</div>
+            <div className="grid grid-cols-5 gap-2">
+              {[1, 3, 5, 8, 10].map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => {
+                    onSave({
+                      ...settings,
+                      theme: {
+                        ...settings.theme,
+                        maxToasts: count,
+                      },
+                    });
+                  }}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    settings.theme.maxToasts === count
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  {count}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Maximum number of error toasts visible at once
+            </p>
+          </div>
 
-          {/* Auto-close Slider */}
-          <SliderControl
-            label="Auto-close after (seconds)"
+          {/* Auto-close Hybrid Input */}
+          <HybridSliderInput
+            label="Auto-close after"
             value={settings.theme.autoCloseMs / 1000}
             min={0}
             max={60}
-            step={5}
+            step={1}
+            unit="sec"
             onChange={(value) => {
               onSave({
                 ...settings,
@@ -55,13 +68,18 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                 },
               });
             }}
-            displayValue={settings.theme.autoCloseMs === 0 ? 'Never' : `${(settings.theme.autoCloseMs / 1000).toFixed(0)}s`}
+            presets={[
+              { value: 0, label: 'Never' },
+              { value: 5, label: '5s' },
+              { value: 10, label: '10s' },
+              { value: 30, label: '30s' },
+            ]}
             helperText="Set to 0 to disable auto-close (toasts stay until manually closed)"
           />
 
           {/* Toast Size Selector */}
           <div>
-            <label className="text-sm font-medium block mb-2">Toast size</label>
+            <div className="text-sm font-medium mb-2">Toast size</div>
             <div className="grid grid-cols-4 gap-2">
               {(['small', 'medium', 'large', 'custom'] as const).map((size) => (
                 <button
@@ -96,10 +114,9 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                 <p className="text-sm font-medium mb-3">Custom dimensions</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground block mb-1">
-                      Width (px)
-                    </label>
+                    <label htmlFor="custom-width" className="text-xs text-muted-foreground block mb-1">Width (px)</label>
                     <input
+                      id="custom-width"
                       type="number"
                       min="200"
                       max="800"
@@ -120,10 +137,9 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground block mb-1">
-                      Height (px)
-                    </label>
+                    <label htmlFor="custom-height" className="text-xs text-muted-foreground block mb-1">Height (px)</label>
                     <input
+                      id="custom-height"
                       type="number"
                       min="50"
                       max="400"

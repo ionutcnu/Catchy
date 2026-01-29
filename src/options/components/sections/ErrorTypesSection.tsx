@@ -17,6 +17,45 @@ export function ErrorTypesSection({ settings, onSave }: ErrorTypesSectionProps) 
     });
   };
 
+  const handleSelectAll = () => {
+    onSave({
+      ...settings,
+      errorTypes: {
+        consoleError: true,
+        uncaught: true,
+        unhandledRejection: true,
+        resource: true,
+        network: true,
+      },
+    });
+  };
+
+  const handleDeselectAll = () => {
+    onSave({
+      ...settings,
+      errorTypes: {
+        consoleError: false,
+        uncaught: false,
+        unhandledRejection: false,
+        resource: false,
+        network: false,
+      },
+    });
+  };
+
+  const handleCommonOnly = () => {
+    onSave({
+      ...settings,
+      errorTypes: {
+        consoleError: true,
+        uncaught: true,
+        unhandledRejection: false,
+        resource: false,
+        network: false,
+      },
+    });
+  };
+
   return (
     <Card className="settings-card">
       <CardHeader>
@@ -28,13 +67,35 @@ export function ErrorTypesSection({ settings, onSave }: ErrorTypesSectionProps) 
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {/* Bulk Actions */}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleSelectAll}
+              className="text-xs px-3 py-1.5 border border-border rounded-lg hover:bg-accent transition-colors"
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              onClick={handleDeselectAll}
+              className="text-xs px-3 py-1.5 border border-border rounded-lg hover:bg-accent transition-colors"
+            >
+              Deselect All
+            </button>
+            <button
+              type="button"
+              onClick={handleCommonOnly}
+              className="text-xs px-3 py-1.5 border border-border rounded-lg hover:bg-accent transition-colors"
+            >
+              Common Only (Errors + Uncaught)
+            </button>
+          </div>
           {/* Console Errors */}
           <label className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 cursor-pointer transition-colors">
             <div className="flex-1">
               <div className="font-medium">Console Errors</div>
-              <div className="text-sm text-muted-foreground">
-                Captures console.error() calls
-              </div>
+              <div className="text-sm text-muted-foreground">Captures console.error() calls</div>
             </div>
             <input
               type="checkbox"
@@ -96,9 +157,7 @@ export function ErrorTypesSection({ settings, onSave }: ErrorTypesSectionProps) 
           <label className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 cursor-pointer transition-colors">
             <div className="flex-1">
               <div className="font-medium">Network Errors</div>
-              <div className="text-sm text-muted-foreground">
-                Captures network/fetch errors
-              </div>
+              <div className="text-sm text-muted-foreground">Captures network/fetch errors</div>
             </div>
             <input
               type="checkbox"
