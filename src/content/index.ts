@@ -11,10 +11,10 @@
  * 3. Shows toast notifications using Shadow DOM when errors are captured
  */
 
-import { toastManager } from './toast-manager';
-import { errorHistoryManager } from './error-history-manager';
+import type { CatchyError, ErrorType, IgnoreRule, ToastPosition, ToastSize } from '@/types';
 import { ErrorDrawer } from './components/ErrorDrawer';
-import type { ErrorType, CatchyError, ToastPosition, ToastSize, IgnoreRule } from '@/types';
+import { errorHistoryManager } from './error-history-manager';
+import { toastManager } from './toast-manager';
 
 // Inline CatchySettings interface to avoid code-splitting issues
 interface CatchySettings {
@@ -414,7 +414,7 @@ async function loadSettings() {
       '[Catchy Content] Settings loaded, globally enabled:',
       isGloballyEnabled,
       'enabled for',
-      window.location.hostname + ':',
+      `${window.location.hostname}:`,
       isEnabledForCurrentSite,
       'position:',
       settings.theme?.position,
@@ -471,7 +471,8 @@ function checkShortcut(event: KeyboardEvent, shortcut: string): boolean {
   const hasAlt = modifiers.includes('alt');
   const hasCtrl = modifiers.includes('ctrl') || modifiers.includes('control');
   const hasShift = modifiers.includes('shift');
-  const hasMeta = modifiers.includes('meta') || modifiers.includes('cmd') || modifiers.includes('command');
+  const hasMeta =
+    modifiers.includes('meta') || modifiers.includes('cmd') || modifiers.includes('command');
 
   return (
     event.altKey === hasAlt &&
@@ -731,7 +732,10 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     // Update max history size if changed
     if (newSettings.theme?.maxHistorySize !== undefined) {
       errorHistoryManager.setMaxSize(newSettings.theme.maxHistorySize);
-      console.log('[Catchy Content] Max history size changed to:', newSettings.theme.maxHistorySize);
+      console.log(
+        '[Catchy Content] Max history size changed to:',
+        newSettings.theme.maxHistorySize
+      );
     }
 
     // Update drawer shortcut if changed
@@ -746,7 +750,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       '->',
       isGloballyEnabled,
       ', for',
-      window.location.hostname + ':',
+      `${window.location.hostname}:`,
       wasEnabledForSite,
       '->',
       isEnabledForCurrentSite
@@ -756,7 +760,12 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   // Update dark mode for error drawer if changed
   if (areaName === 'sync' && changes.darkMode) {
     const newDarkMode = changes.darkMode.newValue;
-    console.log('[Catchy Content] Dark mode storage changed to:', newDarkMode, 'errorDrawer exists:', !!errorDrawer);
+    console.log(
+      '[Catchy Content] Dark mode storage changed to:',
+      newDarkMode,
+      'errorDrawer exists:',
+      !!errorDrawer
+    );
     if (errorDrawer) {
       errorDrawer.setDarkMode(newDarkMode);
       console.log('[Catchy Content] Dark mode applied to drawer');
@@ -800,7 +809,7 @@ async function initializeExtension() {
 
   // Initialize Error Drawer (uses the same shadow root as toast manager)
   const shadowHost = document.getElementById('catchy-toast-host');
-  if (shadowHost && shadowHost.shadowRoot) {
+  if (shadowHost?.shadowRoot) {
     errorDrawer = new ErrorDrawer(shadowHost.shadowRoot, errorHistoryManager);
     errorDrawer.initialize();
 

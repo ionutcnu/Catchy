@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function IgnoredErrorsSection() {
   const [ignoredErrors, setIgnoredErrors] = useState<string[]>([]);
 
   // Load from storage
-  const loadIgnoredErrors = () => {
+  const loadIgnoredErrors = useCallback(() => {
     chrome.storage.local.get(['ignoredErrorSignatures'], (result) => {
       setIgnoredErrors(result.ignoredErrorSignatures || []);
     });
-  };
+  }, []);
 
   // Clear all
   const handleClearAllIgnoredErrors = () => {
@@ -86,9 +86,7 @@ export function IgnoredErrorsSection() {
                           {type}
                         </span>
                       </div>
-                      <p className="text-sm text-foreground break-words font-mono">
-                        {message}
-                      </p>
+                      <p className="text-sm text-foreground break-words font-mono">{message}</p>
                     </div>
                     <button
                       type="button"
@@ -102,6 +100,7 @@ export function IgnoredErrorsSection() {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
+                        <title>Remove</title>
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -118,9 +117,8 @@ export function IgnoredErrorsSection() {
 
           <div className="pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground">
-              💡 <strong>Tip:</strong> Ignored errors are stored per browser session in each
-              tab. They persist across page reloads but are cleared when you close the tab or
-              browser.
+              💡 <strong>Tip:</strong> Ignored errors are stored per browser session in each tab.
+              They persist across page reloads but are cleared when you close the tab or browser.
             </p>
           </div>
         </div>

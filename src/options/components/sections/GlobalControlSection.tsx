@@ -20,7 +20,7 @@ export function GlobalControlSection({ settings, onSave }: GlobalControlSectionP
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <label className="flex items-center justify-between p-4 rounded-lg border-2 border-border hover:bg-accent/50 cursor-pointer transition-colors">
+        <div className="flex items-center justify-between p-4 rounded-lg border-2 border-border hover:bg-accent/50 cursor-pointer transition-colors">
           <div className="flex-1">
             <div className="font-medium text-lg">
               {settings.enabled ? 'Catchy is Enabled' : 'Catchy is Disabled'}
@@ -40,7 +40,7 @@ export function GlobalControlSection({ settings, onSave }: GlobalControlSectionP
               });
             }}
           />
-        </label>
+        </div>
       </CardContent>
     </Card>
   );

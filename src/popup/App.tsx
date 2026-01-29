@@ -255,7 +255,10 @@ export default function PopupApp() {
     // Save to chrome storage
     chrome.storage.sync.set({ darkMode: newDarkMode }, () => {
       if (chrome.runtime.lastError) {
-        console.error('[Catchy Popup] Failed to save dark mode preference:', chrome.runtime.lastError);
+        console.error(
+          '[Catchy Popup] Failed to save dark mode preference:',
+          chrome.runtime.lastError
+        );
       }
     });
   }
@@ -287,6 +290,7 @@ export default function PopupApp() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
+                <title>Light mode</title>
                 <circle cx="12" cy="12" r="5" />
                 <line x1="12" y1="1" x2="12" y2="3" />
                 <line x1="12" y1="21" x2="12" y2="23" />
@@ -309,6 +313,7 @@ export default function PopupApp() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
+                <title>Dark mode</title>
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
             )}
@@ -327,9 +332,7 @@ export default function PopupApp() {
                 <div className="p-4 rounded-lg border bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">
-                        {isGloballyEnabled ? '🌍' : '🎯'}
-                      </span>
+                      <span className="text-lg">{isGloballyEnabled ? '🌍' : '🎯'}</span>
                       <span className="text-sm font-semibold">
                         {isGloballyEnabled ? 'Global Mode' : 'Opt-in Mode'}
                       </span>
@@ -374,6 +377,7 @@ export default function PopupApp() {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
+                    <title>Globe</title>
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -419,6 +423,7 @@ export default function PopupApp() {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
+                    <title>History</title>
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -437,6 +442,7 @@ export default function PopupApp() {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
+                    <title>Settings</title>
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
