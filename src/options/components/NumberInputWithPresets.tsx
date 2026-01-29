@@ -1,3 +1,5 @@
+import type { ChangeEvent } from 'react';
+
 interface NumberInputWithPresetsProps {
   label: string;
   value: number;
@@ -23,7 +25,9 @@ export function NumberInputWithPresets({
   helperText,
   warningText,
 }: NumberInputWithPresetsProps) {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const id = `number-${label.toLowerCase().replace(/\s+/g, '-')}`;
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
     if (newValue >= min && newValue <= max) {
       onChange(newValue);
@@ -32,10 +36,13 @@ export function NumberInputWithPresets({
 
   return (
     <div className="space-y-3">
-      <div className="text-sm font-medium">{label}</div>
+      <label htmlFor={id} className="text-sm font-medium">
+        {label}
+      </label>
 
       <div className="flex items-center gap-3">
         <input
+          id={id}
           type="number"
           min={min}
           max={max}

@@ -19,13 +19,18 @@ export function SliderControl({
   displayValue,
   helperText,
 }: SliderControlProps) {
+  const id = `slider-${label.toLowerCase().replace(/\s+/g, '-')}`;
+
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
-        <div className="text-sm font-medium">{label}</div>
+        <label htmlFor={id} className="text-sm font-medium">
+          {label}
+        </label>
         <span className="text-sm font-mono text-muted-foreground">{displayValue ?? value}</span>
       </div>
       <input
+        id={id}
         type="range"
         min={min}
         max={max}

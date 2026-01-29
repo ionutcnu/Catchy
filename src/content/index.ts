@@ -31,7 +31,7 @@ interface CatchySettings {
     resource: boolean;
     network: boolean;
   };
-  ignoreRules: IgnoreRule[];
+  ignoreRules?: IgnoreRule[]; // Optional - planned feature not yet implemented
   theme: {
     position: ToastPosition;
     maxToasts: number;
@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS: CatchySettings = {
     resource: false,
     network: false,
   },
-  ignoreRules: [],
+  // ignoreRules: [], // Planned feature - not yet implemented
   theme: {
     position: 'bottom-right',
     maxToasts: 5,

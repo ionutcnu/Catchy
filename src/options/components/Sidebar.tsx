@@ -1,11 +1,22 @@
+type SectionId =
+  | 'global'
+  | 'position'
+  | 'errors'
+  | 'persite'
+  | 'display'
+  | 'history'
+  | 'ignored'
+  | 'visual'
+  | 'about';
+
 interface SidebarProps {
-  activeSection: string;
-  onSectionChange: (section: string) => void;
+  activeSection: SectionId;
+  onSectionChange: (section: SectionId) => void;
 }
 
 interface NavGroup {
   title: string;
-  items: { id: string; label: string }[];
+  items: { id: SectionId; label: string }[];
 }
 
 const navGroups: NavGroup[] = [
@@ -52,6 +63,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                     type="button"
                     onClick={() => onSectionChange(item.id)}
                     className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
+                    aria-current={activeSection === item.id ? 'page' : undefined}
                   >
                     {item.label}
                   </button>

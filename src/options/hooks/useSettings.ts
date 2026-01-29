@@ -7,10 +7,16 @@ export function useSettings() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const saveIdRef = useRef(0); // Track save attempts to prevent race conditions
+  const userEditedRef = useRef(false); // Track if user has made edits
 
   // Load settings and theme preference on mount
   useEffect(() => {
     chrome.storage.sync.get(['settings', 'darkMode'], (result) => {
+      // Skip loading if user has already made edits to prevent overwriting
+      if (userEditedRef.current) {
+        return;
+      }
+
       if (result.settings) {
         // Deep merge with defaults to handle legacy settings missing new fields
         const mergedSettings: CatchySettings = {
@@ -68,6 +74,7 @@ export function useSettings() {
 
   // Save settings to Chrome storage
   const saveSettings = (newSettings: CatchySettings) => {
+    userEditedRef.current = true; // Mark that user has made edits
     const previousSettings = settings; // Preserve for rollback on error
     const currentSaveId = ++saveIdRef.current; // Increment save ID for this attempt
 
@@ -78,18 +85,12 @@ export function useSettings() {
         console.error('[Catchy Options] Failed to save settings:', chrome.runtime.lastError);
 
         // Only rollback if this is still the latest save attempt
-        // If user made another change after this save started, don't clobber it
-        setSettings((currentSettings) => {
-          // Check if current state matches the failed save payload
-          if (JSON.stringify(currentSettings) === JSON.stringify(newSettings)) {
-            // Safe to rollback - no newer save has succeeded
-            setSaveError(chrome.runtime.lastError?.message || 'Failed to save settings');
-            setTimeout(() => setSaveError(null), 3000);
-            return previousSettings;
-          }
-          // Current state is different - a newer save succeeded, don't rollback
-          return currentSettings;
-        });
+        // Check saveId to prevent stale failure from undoing newer success
+        if (saveIdRef.current === currentSaveId) {
+          setSaveError(chrome.runtime.lastError?.message || 'Failed to save settings');
+          setTimeout(() => setSaveError(null), 3000);
+          setSettings(previousSettings);
+        }
         return;
       }
 

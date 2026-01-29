@@ -1,5 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+const VERSION = '0.1.0';
+
 export function AboutSection() {
   return (
     <>
@@ -35,7 +37,7 @@ export function AboutSection() {
 
           {/* Tech Stack */}
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <span className="px-2 py-1 bg-muted rounded">v0.1.0</span>
+            <span className="px-2 py-1 bg-muted rounded">v{VERSION}</span>
             <span className="px-2 py-1 bg-muted rounded">React</span>
             <span className="px-2 py-1 bg-muted rounded">TypeScript</span>
             <span className="px-2 py-1 bg-muted rounded">Tailwind CSS</span>
@@ -54,7 +56,7 @@ export function AboutSection() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Version 0.1.0 introduces error history drawer with up to 200 errors per session,
+            Version {VERSION} introduces error history drawer with up to 200 errors per session,
             customizable keyboard shortcuts (Alt+E), dark mode support, per-site settings, selective
             error type toggles, and swipe-to-dismiss gestures.
           </p>

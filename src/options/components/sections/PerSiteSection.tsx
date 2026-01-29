@@ -46,31 +46,21 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
 
   // Add new site to per-site settings
   const handleAddSite = () => {
-    if (!newSiteHostname.trim()) return;
+    const input = newSiteHostname.trim();
+    if (!input) return;
 
-    // Normalize hostname: extract hostname from URL, strip www, lowercase
-    let input = newSiteHostname.trim();
-
-    // Ensure there's a scheme for URL constructor
-    if (!input.match(/^https?:\/\//)) {
-      input = `https://${input}`;
+    // Validate hostname
+    if (!isValidHostname(input)) {
+      // Could show error message to user here
+      return;
     }
 
-    let normalized: string;
-    try {
-      const url = new URL(input);
-      // Extract hostname (includes port if present), strip leading "www.", lowercase
-      normalized = url.hostname.replace(/^www\./, '').toLowerCase();
-    } catch {
-      // If URL parsing fails, fall back to basic normalization
-      normalized = input
-        .replace(/^https?:\/\//, '')
-        .replace(/^www\./, '')
-        .replace(/\/.*$/, '')
-        .toLowerCase();
+    // Normalize and check for duplicates
+    const normalized = normalizeHostname(input);
+    if (isDuplicate(input)) {
+      // Could show error message to user here
+      return;
     }
-
-    if (!normalized) return;
 
     onSave({
       ...settings,

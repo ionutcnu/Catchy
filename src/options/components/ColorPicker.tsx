@@ -21,6 +21,7 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
             value={value}
             onChange={(e) => onChange(e.target.value)}
             className="w-full h-full opacity-0 cursor-pointer"
+            aria-label={label}
           />
         </div>
       </div>

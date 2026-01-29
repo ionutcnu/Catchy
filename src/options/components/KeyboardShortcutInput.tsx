@@ -45,7 +45,13 @@ export function KeyboardShortcutInput({
 }: KeyboardShortcutInputProps) {
   const [isCapturing, setIsCapturing] = useState(false);
   const [conflict, setConflict] = useState<string | null>(null);
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac =
+    (
+      (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData
+        ?.platform || navigator.platform
+    )
+      .toUpperCase()
+      .indexOf('MAC') >= 0;
 
   useEffect(() => {
     if (!isCapturing) return;

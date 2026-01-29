@@ -12,9 +12,20 @@ import { ToastPositionSection } from './components/sections/ToastPositionSection
 import { VisualCustomizationSection } from './components/sections/VisualCustomizationSection';
 import { useSettings } from './hooks/useSettings';
 
+type SectionId =
+  | 'global'
+  | 'position'
+  | 'errors'
+  | 'persite'
+  | 'display'
+  | 'history'
+  | 'ignored'
+  | 'visual'
+  | 'about';
+
 export default function OptionsApp() {
   const { settings, saved, saveError, isDarkMode, saveSettings, toggleDarkMode } = useSettings();
-  const [activeSection, setActiveSection] = useState('global');
+  const [activeSection, setActiveSection] = useState<SectionId>('global');
 
   const renderSection = () => {
     switch (activeSection) {

@@ -7,6 +7,10 @@ export function IgnoredErrorsSection() {
   // Load from storage
   const loadIgnoredErrors = useCallback(() => {
     chrome.storage.local.get(['ignoredErrorSignatures'], (result) => {
+      if (chrome.runtime.lastError) {
+        console.error('Failed to load ignored errors:', chrome.runtime.lastError);
+        return;
+      }
       setIgnoredErrors(result.ignoredErrorSignatures || []);
     });
   }, []);
@@ -14,6 +18,10 @@ export function IgnoredErrorsSection() {
   // Clear all
   const handleClearAllIgnoredErrors = () => {
     chrome.storage.local.set({ ignoredErrorSignatures: [] }, () => {
+      if (chrome.runtime.lastError) {
+        console.error('Failed to clear ignored errors:', chrome.runtime.lastError);
+        return;
+      }
       setIgnoredErrors([]);
     });
   };
@@ -22,6 +30,10 @@ export function IgnoredErrorsSection() {
   const handleRemoveIgnoredError = (signature: string) => {
     const updated = ignoredErrors.filter((s) => s !== signature);
     chrome.storage.local.set({ ignoredErrorSignatures: updated }, () => {
+      if (chrome.runtime.lastError) {
+        console.error('Failed to remove ignored error:', chrome.runtime.lastError);
+        return;
+      }
       setIgnoredErrors(updated);
     });
   };
@@ -117,8 +129,8 @@ export function IgnoredErrorsSection() {
 
           <div className="pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground">
-              💡 <strong>Tip:</strong> Ignored errors are stored per browser session in each tab.
-              They persist across page reloads but are cleared when you close the tab or browser.
+              💡 <strong>Tip:</strong> Ignored errors are stored persistently in local storage. They
+              remain saved across browser restarts until manually removed.
             </p>
           </div>
         </div>

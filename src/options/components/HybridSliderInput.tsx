@@ -1,3 +1,5 @@
+import type { ChangeEvent } from 'react';
+
 interface HybridSliderInputProps {
   label: string;
   value: number;
@@ -21,7 +23,10 @@ export function HybridSliderInput({
   presets,
   helperText,
 }: HybridSliderInputProps) {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const id = `hybrid-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  const sliderId = `${id}-slider`;
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
     if (newValue >= min && newValue <= max) {
       onChange(newValue);
@@ -31,9 +36,12 @@ export function HybridSliderInput({
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <div className="text-sm font-medium">{label}</div>
+        <label htmlFor={id} className="text-sm font-medium">
+          {label}
+        </label>
         <div className="flex items-center gap-2">
           <input
+            id={id}
             type="number"
             min={min}
             max={max}
@@ -41,12 +49,14 @@ export function HybridSliderInput({
             value={value}
             onChange={handleInputChange}
             className="w-20 px-2 py-1 border border-border rounded text-sm text-right bg-background"
+            aria-label={`${label} number input`}
           />
           {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
         </div>
       </div>
 
       <input
+        id={sliderId}
         type="range"
         min={min}
         max={max}
@@ -54,6 +64,7 @@ export function HybridSliderInput({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+        aria-label={`${label} slider`}
       />
 
       {presets && presets.length > 0 && (

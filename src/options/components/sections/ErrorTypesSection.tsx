@@ -18,28 +18,30 @@ export function ErrorTypesSection({ settings, onSave }: ErrorTypesSectionProps) 
   };
 
   const handleSelectAll = () => {
+    const allEnabled = Object.keys(settings.errorTypes).reduce(
+      (acc, key) => {
+        acc[key as keyof CatchySettings['errorTypes']] = true;
+        return acc;
+      },
+      {} as CatchySettings['errorTypes']
+    );
     onSave({
       ...settings,
-      errorTypes: {
-        consoleError: true,
-        uncaught: true,
-        unhandledRejection: true,
-        resource: true,
-        network: true,
-      },
+      errorTypes: allEnabled,
     });
   };
 
   const handleDeselectAll = () => {
+    const allDisabled = Object.keys(settings.errorTypes).reduce(
+      (acc, key) => {
+        acc[key as keyof CatchySettings['errorTypes']] = false;
+        return acc;
+      },
+      {} as CatchySettings['errorTypes']
+    );
     onSave({
       ...settings,
-      errorTypes: {
-        consoleError: false,
-        uncaught: false,
-        unhandledRejection: false,
-        resource: false,
-        network: false,
-      },
+      errorTypes: allDisabled,
     });
   };
 

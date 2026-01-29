@@ -86,7 +86,7 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
           {/* Border Radius */}
           <SliderControl
             label="Border Radius (px)"
-            value={settings.theme.borderRadius || 8}
+            value={settings.theme.borderRadius ?? 8}
             min={0}
             max={24}
             step={2}
@@ -105,7 +105,7 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
           {/* Spacing */}
           <SliderControl
             label="Spacing (px)"
-            value={settings.theme.spacing || 16}
+            value={settings.theme.spacing ?? 16}
             min={4}
             max={32}
             step={2}
@@ -139,7 +139,7 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
                   },
                 });
               }}
-              className="w-5 h-5 accent-primary cursor-pointer"
+              className="w-5 h-5 accent-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             />
           </label>
         </div>
