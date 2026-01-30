@@ -11,17 +11,8 @@ import { PerSiteSection } from './components/sections/PerSiteSection';
 import { ToastPositionSection } from './components/sections/ToastPositionSection';
 import { VisualCustomizationSection } from './components/sections/VisualCustomizationSection';
 import { useSettings } from './hooks/useSettings';
-
-type SectionId =
-  | 'global'
-  | 'position'
-  | 'errors'
-  | 'persite'
-  | 'display'
-  | 'history'
-  | 'ignored'
-  | 'visual'
-  | 'about';
+import type { SectionId } from './types/sections';
+import { assertNever } from './types/sections';
 
 export default function OptionsApp() {
   const { settings, saved, saveError, isDarkMode, saveSettings, toggleDarkMode } = useSettings();
@@ -48,6 +39,8 @@ export default function OptionsApp() {
       case 'about':
         return <AboutSection />;
       default:
+        // Exhaustiveness check - TypeScript will error if a case is missing
+        assertNever(activeSection);
         return <GlobalControlSection settings={settings} onSave={saveSettings} />;
     }
   };

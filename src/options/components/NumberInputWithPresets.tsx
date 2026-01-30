@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react';
+import { useId } from 'react';
 
 interface NumberInputWithPresetsProps {
   label: string;
@@ -25,7 +26,7 @@ export function NumberInputWithPresets({
   helperText,
   warningText,
 }: NumberInputWithPresetsProps) {
-  const id = `number-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  const id = useId();
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
@@ -61,7 +62,12 @@ export function NumberInputWithPresets({
             <button
               key={preset}
               type="button"
-              onClick={() => onChange(preset)}
+              onClick={() => {
+                // Validate preset is within bounds
+                if (preset >= min && preset <= max) {
+                  onChange(preset);
+                }
+              }}
               className="px-2 py-1 text-xs border border-border rounded hover:bg-accent transition-colors"
             >
               {preset}

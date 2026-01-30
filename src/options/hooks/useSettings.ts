@@ -12,12 +12,8 @@ export function useSettings() {
   // Load settings and theme preference on mount
   useEffect(() => {
     chrome.storage.sync.get(['settings', 'darkMode'], (result) => {
-      // Skip loading if user has already made edits to prevent overwriting
-      if (userEditedRef.current) {
-        return;
-      }
-
-      if (result.settings) {
+      // Load settings only if user hasn't made edits
+      if (!userEditedRef.current && result.settings) {
         // Deep merge with defaults to handle legacy settings missing new fields
         const mergedSettings: CatchySettings = {
           ...DEFAULT_SETTINGS,
@@ -38,7 +34,7 @@ export function useSettings() {
         setSettings(mergedSettings);
       }
 
-      // Load dark mode preference
+      // Always load dark mode preference (independent of settings)
       if (result.darkMode !== undefined) {
         setIsDarkMode(result.darkMode);
         if (result.darkMode) {

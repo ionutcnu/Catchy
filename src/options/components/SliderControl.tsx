@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 interface SliderControlProps {
   label: string;
   value: number;
@@ -19,7 +21,7 @@ export function SliderControl({
   displayValue,
   helperText,
 }: SliderControlProps) {
-  const id = `slider-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  const id = useId();
 
   return (
     <div>

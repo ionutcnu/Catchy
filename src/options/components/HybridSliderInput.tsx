@@ -1,4 +1,5 @@
 import type { ChangeEvent } from 'react';
+import { useId } from 'react';
 
 interface HybridSliderInputProps {
   label: string;
@@ -23,8 +24,8 @@ export function HybridSliderInput({
   presets,
   helperText,
 }: HybridSliderInputProps) {
-  const id = `hybrid-${label.toLowerCase().replace(/\s+/g, '-')}`;
-  const sliderId = `${id}-slider`;
+  const id = useId();
+  const sliderId = useId();
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
@@ -73,7 +74,12 @@ export function HybridSliderInput({
             <button
               key={preset.value}
               type="button"
-              onClick={() => onChange(preset.value)}
+              onClick={() => {
+                // Validate preset is within bounds
+                if (preset.value >= min && preset.value <= max) {
+                  onChange(preset.value);
+                }
+              }}
               className="px-2 py-1 text-xs border border-border rounded hover:bg-accent transition-colors"
             >
               {preset.label}

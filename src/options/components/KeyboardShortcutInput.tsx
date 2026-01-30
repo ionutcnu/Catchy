@@ -15,8 +15,8 @@ const BROWSER_RESERVED_SHORTCUTS = [
   'Ctrl+Shift+N',
   'Ctrl+Tab',
   'Ctrl+Shift+Tab',
-  'Alt+Left',
-  'Alt+Right',
+  'Alt+ArrowLeft',
+  'Alt+ArrowRight',
   'Ctrl+L',
   'Ctrl+K',
   'F5',
@@ -61,15 +61,29 @@ export function KeyboardShortcutInput({
       e.stopPropagation();
 
       const keys: string[] = [];
+      const modifiers: string[] = [];
 
       // Add modifiers
-      if (e.ctrlKey) keys.push('Ctrl');
-      if (e.altKey) keys.push('Alt');
-      if (e.shiftKey) keys.push('Shift');
-      if (e.metaKey) keys.push('Cmd');
+      if (e.ctrlKey) {
+        keys.push('Ctrl');
+        modifiers.push('Ctrl');
+      }
+      if (e.altKey) {
+        keys.push('Alt');
+        modifiers.push('Alt');
+      }
+      if (e.shiftKey) {
+        keys.push('Shift');
+        modifiers.push('Shift');
+      }
+      if (e.metaKey) {
+        keys.push('Cmd');
+        modifiers.push('Cmd');
+      }
 
       // Add main key (not a modifier)
       const mainKey = e.key;
+      let hasMainKey = false;
       if (!['Control', 'Alt', 'Shift', 'Meta'].includes(mainKey) && mainKey.length > 0) {
         // Normalize key names
         let normalizedKey = mainKey;
@@ -77,11 +91,12 @@ export function KeyboardShortcutInput({
           normalizedKey = mainKey.toUpperCase();
         }
         keys.push(normalizedKey);
+        hasMainKey = true;
       }
 
-      // Need at least one modifier + one main key
-      if (keys.length < 2) {
-        setConflict('Shortcut must include at least one modifier key');
+      // Must have at least one modifier AND one main key
+      if (modifiers.length === 0 || !hasMainKey) {
+        setConflict('Shortcut must include at least one modifier key and one main key');
         return;
       }
 

@@ -118,7 +118,7 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
                 },
               });
             }}
-            helperText="Internal padding within the toast"
+            helperText="Gap between toasts in pixels"
           />
 
           {/* Shadow Toggle */}
@@ -130,12 +130,12 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
             <input
               type="checkbox"
               checked={settings.theme.shadow ?? true}
-              onChange={() => {
+              onChange={(e) => {
                 onSave({
                   ...settings,
                   theme: {
                     ...settings.theme,
-                    shadow: !settings.theme.shadow,
+                    shadow: e.target.checked,
                   },
                 });
               }}

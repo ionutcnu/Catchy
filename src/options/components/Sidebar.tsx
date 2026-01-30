@@ -1,13 +1,4 @@
-type SectionId =
-  | 'global'
-  | 'position'
-  | 'errors'
-  | 'persite'
-  | 'display'
-  | 'history'
-  | 'ignored'
-  | 'visual'
-  | 'about';
+import type { SectionId } from '../types/sections';
 
 interface SidebarProps {
   activeSection: SectionId;
