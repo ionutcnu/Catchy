@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 export function AboutSection() {
   return (

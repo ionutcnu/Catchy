@@ -23,6 +23,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-01-30
+
+### Changed
+- **Settings Page Overhaul**
+  - Refactored monolithic settings page into modular component architecture
+  - Added sidebar navigation with categorized sections
+  - Improved input controls (hybrid sliders, color pickers, keyboard shortcuts)
+  - Enhanced accessibility (ARIA labels, focus states, screen reader support)
+  - Better UX with specialized input components and preset values
+
+### Fixed
+- Resolved all build errors (TypeScript and Biome lint)
+- Fixed 38 CodeRabbit review issues:
+  - Accessibility improvements (10 fixes)
+  - Type safety enhancements (3 fixes)
+  - Logic and race condition fixes (5 fixes)
+  - Code quality improvements (4 fixes)
+  - Privacy and deprecation updates (2 fixes)
+  - Architecture improvements (2 fixes)
+  - Critical validation fixes (2 fixes)
+  - UI/UX bug fixes (4 fixes)
+  - Consistency improvements (6 fixes)
+- Fixed keyboard shortcut validation (modifier-only shortcuts now rejected)
+- Fixed dark mode hydration issue
+- Fixed shadow toggle checkbox behavior
+- Fixed preset button validation
+- Removed Google Fonts for privacy/GDPR compliance
+
+---
+
 ## [0.1.0] - 2025-11-06
 
 ### Added

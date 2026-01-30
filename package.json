@@ -1,6 +1,6 @@
 {
   "name": "catchy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A Chrome extension that catches console and runtime errors and shows clean, customizable toasts with error history drawer and per-site controls",
   "type": "module",
   "scripts": {

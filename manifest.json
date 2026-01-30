@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Catchy - Console Error Toaster",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Catch and visualize console errors, exceptions, and runtime issues with customizable toast notifications, error history drawer, and per-site controls. Created by Lonut & Wadalin.",
 
   "icons": {
