@@ -63,8 +63,8 @@ export interface CatchySettings {
     network: boolean;
   };
 
-  // Ignore rules
-  ignoreRules: IgnoreRule[]; // List of rules to filter out errors
+  // Ignore rules (planned feature - not yet implemented)
+  ignoreRules?: IgnoreRule[]; // List of rules to filter out errors (optional until implemented)
 
   // UI settings
   theme: {
@@ -130,7 +130,7 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     resource: false,
     network: false,
   },
-  ignoreRules: [],
+  // ignoreRules: [], // Planned feature - not yet implemented
   theme: {
     position: 'bottom-right',
     maxToasts: 5,

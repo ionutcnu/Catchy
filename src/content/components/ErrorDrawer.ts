@@ -8,6 +8,15 @@
 import type { CatchyError, ErrorType } from '@/types';
 import type { ErrorHistoryManager } from '../error-history-manager';
 
+// Interface for HTMLElement with custom listener properties
+interface HTMLElementWithListeners extends HTMLElement {
+  __darkModeListener?: (
+    changes: { [key: string]: chrome.storage.StorageChange },
+    areaName: string
+  ) => void;
+  __escListener?: (e: KeyboardEvent) => void;
+}
+
 export class ErrorDrawer {
   private shadowRoot: ShadowRoot;
   private drawerElement: HTMLDivElement | null = null;
@@ -731,9 +740,10 @@ export class ErrorDrawer {
     if (errors.length === 0) {
       const emptyState = document.createElement('div');
       emptyState.className = 'catchy-no-errors';
-      emptyState.textContent = this.searchQuery || this.activeFilters.size > 0
-        ? 'No errors match your filters'
-        : 'No errors captured yet';
+      emptyState.textContent =
+        this.searchQuery || this.activeFilters.size > 0
+          ? 'No errors match your filters'
+          : 'No errors captured yet';
       content.appendChild(emptyState);
       return;
     }
@@ -942,7 +952,7 @@ export class ErrorDrawer {
       chrome.storage.onChanged.addListener(handleDarkModeChange);
 
       // Store listener reference for cleanup
-      (overlay as any).__darkModeListener = handleDarkModeChange;
+      (overlay as HTMLElementWithListeners).__darkModeListener = handleDarkModeChange;
 
       // Show with animation
       requestAnimationFrame(() => {
@@ -959,7 +969,7 @@ export class ErrorDrawer {
         }
       };
       document.addEventListener('keydown', handleEscKey);
-      (overlay as any).__escListener = handleEscKey;
+      (overlay as HTMLElementWithListeners).__escListener = handleEscKey;
 
       // Close on overlay click
       overlay.addEventListener('click', (e) => {
@@ -977,17 +987,17 @@ export class ErrorDrawer {
     overlay.classList.remove('show');
 
     // Remove dark mode listener
-    const listener = (overlay as any).__darkModeListener;
+    const listener = (overlay as HTMLElementWithListeners).__darkModeListener;
     if (listener) {
       chrome.storage.onChanged.removeListener(listener);
-      delete (overlay as any).__darkModeListener;
+      delete (overlay as HTMLElementWithListeners).__darkModeListener;
     }
 
     // Remove ESC listener
-    const escListener = (overlay as any).__escListener;
+    const escListener = (overlay as HTMLElementWithListeners).__escListener;
     if (escListener) {
       document.removeEventListener('keydown', escListener);
-      delete (overlay as any).__escListener;
+      delete (overlay as HTMLElementWithListeners).__escListener;
     }
 
     setTimeout(() => {

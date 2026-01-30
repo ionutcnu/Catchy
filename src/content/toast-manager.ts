@@ -5,8 +5,8 @@
  * Singleton pattern - only one instance should exist per page.
  */
 
-import { Toast, type ToastData, type ToastOptions } from './components/Toast';
 import type { ToastPosition } from '@/types';
+import { Toast, type ToastData, type ToastOptions } from './components/Toast';
 
 export class ToastManager {
   private shadowRoot: ShadowRoot | null = null;
@@ -906,7 +906,12 @@ export class ToastManager {
     if (import.meta.env.DEV) {
       console.log('[Catchy ToastManager] CSS variables updated for size:', this.toastSize);
       if (this.toastSize === 'custom') {
-        console.log('[Catchy ToastManager] Custom dimensions:', this.customWidth, 'x', this.customHeight);
+        console.log(
+          '[Catchy ToastManager] Custom dimensions:',
+          this.customWidth,
+          'x',
+          this.customHeight
+        );
       }
     }
   }

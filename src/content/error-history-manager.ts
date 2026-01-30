@@ -125,7 +125,9 @@ export class ErrorHistoryManager {
    * Get errors within a time range
    */
   public filterByTimeRange(startTime: number, endTime: number): CatchyError[] {
-    return this.errors.filter((error) => error.timestamp >= startTime && error.timestamp <= endTime);
+    return this.errors.filter(
+      (error) => error.timestamp >= startTime && error.timestamp <= endTime
+    );
   }
 
   /**
@@ -149,7 +151,17 @@ export class ErrorHistoryManager {
    */
   public exportToCSV(): string {
     // CSV header
-    const headers = ['Timestamp', 'Date', 'Type', 'Message', 'File', 'Line', 'Column', 'URL', 'Count'];
+    const headers = [
+      'Timestamp',
+      'Date',
+      'Type',
+      'Message',
+      'File',
+      'Line',
+      'Column',
+      'URL',
+      'Count',
+    ];
     const rows = [headers.join(',')];
 
     // Add each error as a row

@@ -11,10 +11,10 @@
  * 3. Shows toast notifications using Shadow DOM when errors are captured
  */
 
-import { toastManager } from './toast-manager';
-import { errorHistoryManager } from './error-history-manager';
+import type { CatchyError, ErrorType, IgnoreRule, ToastPosition, ToastSize } from '@/types';
 import { ErrorDrawer } from './components/ErrorDrawer';
-import type { ErrorType, CatchyError, ToastPosition, ToastSize, IgnoreRule } from '@/types';
+import { errorHistoryManager } from './error-history-manager';
+import { toastManager } from './toast-manager';
 
 // Inline CatchySettings interface to avoid code-splitting issues
 interface CatchySettings {
@@ -31,7 +31,7 @@ interface CatchySettings {
     resource: boolean;
     network: boolean;
   };
-  ignoreRules: IgnoreRule[];
+  ignoreRules?: IgnoreRule[]; // Optional - planned feature not yet implemented
   theme: {
     position: ToastPosition;
     maxToasts: number;
@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS: CatchySettings = {
     resource: false,
     network: false,
   },
-  ignoreRules: [],
+  // ignoreRules: [], // Planned feature - not yet implemented
   theme: {
     position: 'bottom-right',
     maxToasts: 5,
@@ -110,6 +110,215 @@ let enabledErrorTypes = {
   network: false,
 };
 let drawerShortcut = 'Alt+E'; // Default keyboard shortcut for opening drawer
+// let ignoreButtonThreshold = 3; // Show ignore button after X error occurrences (unused)
+
+/**
+ * Error ignore tracking (3 scopes: session, browser, permanent)
+ */
+// Commented out - currently unused
+/* let sessionIgnoreList: Set<string> = new Set(); // Session-only ignores (clears on page reload)
+let errorCountsPerTab: Map<string, number> = new Map(); // Error signature -> count
+const TAB_ID = `tab-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`; // Unique ID for this tab/page session
+const ERROR_COUNTS_STORAGE_KEY = `catchy-error-counts-${TAB_ID}`;
+const BROWSER_IGNORE_STORAGE_KEY = 'catchy-ignore-browser'; // sessionStorage key for browser-scope ignores
+const MAX_SESSION_IGNORES = 1000; // Maximum number of errors to track in session ignore list
+const MAX_ERROR_COUNTS = 1000; // Maximum number of error signatures to track counts for */
+
+/**
+ * Track if extension context has been invalidated
+ * Once invalid, we stop trying chrome API calls to avoid error spam
+ */
+// let extensionContextInvalidated = false; // Commented out - currently unused
+
+/**
+ * Check if extension context is still valid
+ * During development, extension reloads invalidate the old context
+ */
+// Commented out - currently unused
+/* function isExtensionContextValid(): boolean {
+  if (extensionContextInvalidated) {
+    return false;
+  }
+
+  try {
+    // Try to access chrome.runtime.id - if context is invalid, this will throw
+    if (!chrome?.runtime?.id) {
+      extensionContextInvalidated = true;
+      return false;
+    }
+    return true;
+  } catch {
+    extensionContextInvalidated = true;
+    return false;
+  }
+} */
+
+/**
+ * Generate error signature for deduplication and ignore matching
+ * Format: type::message (ignores file/line variations)
+ */
+// Commented out - currently unused
+// function getErrorSignature(error: { type: string; message: string }): string {
+//   return `${error.type}::${error.message}`;
+// }
+
+/**
+ * Check if error should be shown (not in any ignore list)
+ */
+// Commented out - currently unused
+/* function shouldShowError(signature: string): boolean {
+  // Check session ignores
+  if (sessionIgnoreList.has(signature)) {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy Content] Error blocked by session ignore:', signature);
+    }
+    return false;
+  }
+
+  // Check browser-scope ignores (sessionStorage)
+  try {
+    const browserIgnores = sessionStorage.getItem(BROWSER_IGNORE_STORAGE_KEY);
+    if (browserIgnores) {
+      const ignoreList: string[] = JSON.parse(browserIgnores);
+      if (ignoreList.includes(signature)) {
+        if (import.meta.env.DEV) {
+          console.log('[Catchy Content] Error blocked by browser ignore:', signature);
+        }
+        return false;
+      }
+    }
+  } catch (error) {
+    console.error('[Catchy Content] Failed to check browser ignores:', error);
+  }
+
+  // TODO: Check permanent ignores (ignoreRules) - will implement when adding ignore button
+
+  if (import.meta.env.DEV) {
+    console.log('[Catchy Content] Error NOT ignored, will show:', signature);
+  }
+  return true; // Not ignored
+} */
+
+/**
+ * Add error signature to session ignore list with size limiting
+ * Prevents unbounded growth by removing oldest entries when limit is reached
+ */
+// Commented out - currently unused
+/* function addToSessionIgnoreList(signature: string): void {
+  // Check if at capacity
+  if (sessionIgnoreList.size >= MAX_SESSION_IGNORES) {
+    // Remove oldest entry (first item in Set)
+    const firstItem = sessionIgnoreList.values().next().value;
+    if (firstItem) {
+      sessionIgnoreList.delete(firstItem);
+      if (import.meta.env.DEV) {
+        console.log('[Catchy Content] Session ignore list at capacity, removed oldest:', firstItem);
+      }
+    }
+  }
+
+  // Add new signature
+  sessionIgnoreList.add(signature);
+
+  // Warn when approaching capacity (at 90%)
+  if (sessionIgnoreList.size >= MAX_SESSION_IGNORES * 0.9 && import.meta.env.DEV) {
+    console.warn(
+      `[Catchy Content] Session ignore list is at ${sessionIgnoreList.size}/${MAX_SESSION_IGNORES} (${Math.round((sessionIgnoreList.size / MAX_SESSION_IGNORES) * 100)}%)`
+    );
+  }
+} */
+
+/**
+ * Load error counts from storage for this tab
+ */
+// Commented out - currently unused
+/* async function loadErrorCounts() {
+  if (!isExtensionContextValid()) {
+    // Silently skip if context is invalid
+    return;
+  }
+
+  try {
+    const result = await chrome.storage.local.get([ERROR_COUNTS_STORAGE_KEY]);
+    const counts = result[ERROR_COUNTS_STORAGE_KEY] || {};
+    errorCountsPerTab = new Map(Object.entries(counts));
+    console.log('[Catchy Content] Loaded error counts:', errorCountsPerTab.size, 'entries');
+  } catch (error) {
+    // Check if this is the context invalidation error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('Extension context invalidated')) {
+      extensionContextInvalidated = true;
+      if (import.meta.env.DEV) {
+        console.warn('[Catchy Content] Extension context invalidated during load');
+      }
+    } else {
+      console.error('[Catchy Content] Failed to load error counts:', error);
+    }
+  }
+} */
+
+/**
+ * Save error counts to storage for persistence across page reloads
+ */
+// Commented out - currently unused
+/* async function saveErrorCounts() {
+  if (!isExtensionContextValid()) {
+    // Silently skip if context is invalid - this is normal during development
+    return;
+  }
+
+  try {
+    const counts = Object.fromEntries(errorCountsPerTab);
+    await chrome.storage.local.set({ [ERROR_COUNTS_STORAGE_KEY]: counts });
+  } catch (error) {
+    // Check if this is the context invalidation error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('Extension context invalidated')) {
+      extensionContextInvalidated = true;
+      // Only log in dev mode to avoid console spam
+      if (import.meta.env.DEV) {
+        console.warn('[Catchy Content] Extension context invalidated - storage operations disabled');
+      }
+    } else {
+      // Log other errors normally
+      console.error('[Catchy Content] Failed to save error counts:', error);
+    }
+  }
+} */
+
+/**
+ * Increment error count for a signature
+ * Implements size limiting to prevent unbounded growth
+ */
+// Commented out - currently unused
+/* function incrementErrorCount(signature: string): number {
+  const currentCount = errorCountsPerTab.get(signature) || 0;
+  const newCount = currentCount + 1;
+
+  // Check if at capacity and this is a new signature
+  if (!errorCountsPerTab.has(signature) && errorCountsPerTab.size >= MAX_ERROR_COUNTS) {
+    // Remove oldest entry (first item in Map)
+    const firstKey = errorCountsPerTab.keys().next().value;
+    if (firstKey) {
+      errorCountsPerTab.delete(firstKey);
+      if (import.meta.env.DEV) {
+        console.log('[Catchy Content] Error counts at capacity, removed oldest:', firstKey);
+      }
+    }
+  }
+
+  errorCountsPerTab.set(signature, newCount);
+  saveErrorCounts(); // Persist to storage
+
+  // Warn when approaching capacity (at 90%)
+  if (errorCountsPerTab.size >= MAX_ERROR_COUNTS * 0.9 && import.meta.env.DEV) {
+    console.warn(
+      `[Catchy Content] Error counts map is at ${errorCountsPerTab.size}/${MAX_ERROR_COUNTS} (${Math.round((errorCountsPerTab.size / MAX_ERROR_COUNTS) * 100)}%)`
+    );
+  }
+
+  return newCount;
+} */
 
 /**
  * Load settings from Chrome storage and update our cache
@@ -205,7 +414,7 @@ async function loadSettings() {
       '[Catchy Content] Settings loaded, globally enabled:',
       isGloballyEnabled,
       'enabled for',
-      window.location.hostname + ':',
+      `${window.location.hostname}:`,
       isEnabledForCurrentSite,
       'position:',
       settings.theme?.position,
@@ -262,7 +471,8 @@ function checkShortcut(event: KeyboardEvent, shortcut: string): boolean {
   const hasAlt = modifiers.includes('alt');
   const hasCtrl = modifiers.includes('ctrl') || modifiers.includes('control');
   const hasShift = modifiers.includes('shift');
-  const hasMeta = modifiers.includes('meta') || modifiers.includes('cmd') || modifiers.includes('command');
+  const hasMeta =
+    modifiers.includes('meta') || modifiers.includes('cmd') || modifiers.includes('command');
 
   return (
     event.altKey === hasAlt &&
@@ -331,6 +541,54 @@ window.addEventListener('message', (event) => {
     showToast(event.data.error);
   }
 });
+
+/**
+ * Handle error ignore action from Toast component
+ */
+// Commented out - currently unused
+/* function handleErrorIgnore(
+  toastId: string,
+  signature: string,
+  scope: 'session' | 'browser' | 'permanent'
+): void {
+  console.log('[Catchy Content] === IGNORING ERROR ===');
+  console.log('[Catchy Content] Scope:', scope);
+  console.log('[Catchy Content] Signature to ignore:', signature);
+  console.log('[Catchy Content] Signature length:', signature.length);
+  console.log('[Catchy Content] Signature characters:', signature.split('').map(c => c.charCodeAt(0)));
+
+  if (scope === 'session') {
+    // Add to session ignore list (clears on page reload)
+    addToSessionIgnoreList(signature);
+    console.log('[Catchy Content] ✓ Added to session ignore list');
+    console.log('[Catchy Content] Total session ignores:', sessionIgnoreList.size);
+    console.log('[Catchy Content] List contents:', Array.from(sessionIgnoreList));
+  } else if (scope === 'browser') {
+    // Add to browser-scope ignore list (sessionStorage - clears on browser close)
+    try {
+      const existing = sessionStorage.getItem(BROWSER_IGNORE_STORAGE_KEY);
+      const ignoreList: string[] = existing ? JSON.parse(existing) : [];
+      if (!ignoreList.includes(signature)) {
+        ignoreList.push(signature);
+        sessionStorage.setItem(BROWSER_IGNORE_STORAGE_KEY, JSON.stringify(ignoreList));
+        console.log('[Catchy Content] Added to browser ignore list. Total browser ignores:', ignoreList.length);
+      }
+    } catch (error) {
+      console.error('[Catchy Content] Failed to save browser ignore:', error);
+    }
+  } else if (scope === 'permanent') {
+    // Add to permanent ignore list (chrome.storage.sync ignoreRules)
+    // TODO: Implement permanent ignore rules
+    // For now, just use browser scope as fallback
+    console.log('[Catchy Content] Permanent ignore not yet implemented, using browser scope:', signature);
+    handleErrorIgnore(toastId, signature, 'browser');
+  }
+
+  // Remove from error counts since it's now ignored
+  errorCountsPerTab.delete(signature);
+  saveErrorCounts();
+  console.log('[Catchy Content] Removed error count for ignored signature');
+} */
 
 /**
  * Step 3: Show a toast notification for the error
@@ -474,7 +732,10 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     // Update max history size if changed
     if (newSettings.theme?.maxHistorySize !== undefined) {
       errorHistoryManager.setMaxSize(newSettings.theme.maxHistorySize);
-      console.log('[Catchy Content] Max history size changed to:', newSettings.theme.maxHistorySize);
+      console.log(
+        '[Catchy Content] Max history size changed to:',
+        newSettings.theme.maxHistorySize
+      );
     }
 
     // Update drawer shortcut if changed
@@ -489,7 +750,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       '->',
       isGloballyEnabled,
       ', for',
-      window.location.hostname + ':',
+      `${window.location.hostname}:`,
       wasEnabledForSite,
       '->',
       isEnabledForCurrentSite
@@ -499,7 +760,12 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   // Update dark mode for error drawer if changed
   if (areaName === 'sync' && changes.darkMode) {
     const newDarkMode = changes.darkMode.newValue;
-    console.log('[Catchy Content] Dark mode storage changed to:', newDarkMode, 'errorDrawer exists:', !!errorDrawer);
+    console.log(
+      '[Catchy Content] Dark mode storage changed to:',
+      newDarkMode,
+      'errorDrawer exists:',
+      !!errorDrawer
+    );
     if (errorDrawer) {
       errorDrawer.setDarkMode(newDarkMode);
       console.log('[Catchy Content] Dark mode applied to drawer');
@@ -543,7 +809,7 @@ async function initializeExtension() {
 
   // Initialize Error Drawer (uses the same shadow root as toast manager)
   const shadowHost = document.getElementById('catchy-toast-host');
-  if (shadowHost && shadowHost.shadowRoot) {
+  if (shadowHost?.shadowRoot) {
     errorDrawer = new ErrorDrawer(shadowHost.shadowRoot, errorHistoryManager);
     errorDrawer.initialize();
 
