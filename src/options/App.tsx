@@ -41,7 +41,6 @@ export default function OptionsApp() {
       default:
         // Exhaustiveness check - TypeScript will error if a case is missing
         assertNever(activeSection);
-        return <GlobalControlSection settings={settings} onSave={saveSettings} />;
     }
   };
 

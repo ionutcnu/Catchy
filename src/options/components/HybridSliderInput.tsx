@@ -50,7 +50,6 @@ export function HybridSliderInput({
             value={value}
             onChange={handleInputChange}
             className="w-20 px-2 py-1 border border-border rounded text-sm text-right bg-background"
-            aria-label={`${label} number input`}
           />
           {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
         </div>
@@ -70,9 +69,9 @@ export function HybridSliderInput({
 
       {presets && presets.length > 0 && (
         <div className="flex gap-2">
-          {presets.map((preset) => (
+          {presets.map((preset, index) => (
             <button
-              key={preset.value}
+              key={`${preset.value}-${index}`}
               type="button"
               onClick={() => {
                 // Validate preset is within bounds

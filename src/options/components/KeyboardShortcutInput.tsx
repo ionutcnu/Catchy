@@ -57,6 +57,14 @@ export function KeyboardShortcutInput({
     if (!isCapturing) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle Escape to cancel capturing
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsCapturing(false);
+        setConflict(null);
+        return;
+      }
+
       e.preventDefault();
       e.stopPropagation();
 
@@ -114,19 +122,10 @@ export function KeyboardShortcutInput({
       setIsCapturing(false);
     };
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsCapturing(false);
-        setConflict(null);
-      }
-    };
-
     window.addEventListener('keydown', handleKeyDown, true);
-    window.addEventListener('keyup', handleEscape, true);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
-      window.removeEventListener('keyup', handleEscape, true);
     };
   }, [isCapturing, onChange]);
 

@@ -27,6 +27,8 @@ export function NumberInputWithPresets({
   warningText,
 }: NumberInputWithPresetsProps) {
   const id = useId();
+  const helperTextId = useId();
+  const warningTextId = useId();
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
@@ -34,6 +36,11 @@ export function NumberInputWithPresets({
       onChange(newValue);
     }
   };
+
+  // Build aria-describedby attribute
+  const describedByIds = [helperText ? helperTextId : null, warningText ? warningTextId : null]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className="space-y-3">
@@ -51,6 +58,7 @@ export function NumberInputWithPresets({
           value={value}
           onChange={handleInputChange}
           className="flex-1 px-3 py-2 border border-border rounded bg-background"
+          aria-describedby={describedByIds || undefined}
         />
         {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
       </div>
@@ -76,10 +84,14 @@ export function NumberInputWithPresets({
         </div>
       )}
 
-      {helperText && <p className="text-xs text-muted-foreground">{helperText}</p>}
+      {helperText && (
+        <p id={helperTextId} className="text-xs text-muted-foreground">
+          {helperText}
+        </p>
+      )}
 
       {warningText && (
-        <p className="text-xs text-orange-600 flex items-center gap-1">
+        <p id={warningTextId} className="text-xs text-orange-600 flex items-center gap-1">
           <span>⚠️</span>
           <span>{warningText}</span>
         </p>

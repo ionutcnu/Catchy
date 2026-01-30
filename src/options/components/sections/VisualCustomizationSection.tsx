@@ -23,7 +23,7 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
           {/* Background Color */}
           <ColorPicker
             label="Background Color"
-            value={settings.theme.backgroundColor || '#ffffff'}
+            value={settings.theme.backgroundColor ?? '#ffffff'}
             onChange={(color) => {
               onSave({
                 ...settings,
@@ -38,7 +38,7 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
           {/* Text Color */}
           <ColorPicker
             label="Text Color"
-            value={settings.theme.textColor || '#000000'}
+            value={settings.theme.textColor ?? '#000000'}
             onChange={(color) => {
               onSave({
                 ...settings,
