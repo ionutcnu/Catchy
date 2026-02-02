@@ -39,6 +39,7 @@ export function GlobalControlSection({ settings, onSave }: GlobalControlSectionP
                 enabled: checked,
               });
             }}
+            data-testid="global-control-switch"
           />
         </div>
       </CardContent>

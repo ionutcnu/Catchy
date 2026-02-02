@@ -33,6 +33,7 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
               <button
                 key={position}
                 type="button"
+                data-testid={`toast-position-${position}`}
                 onClick={() => handlePositionChange(position)}
                 className={`p-6 rounded-lg border-2 transition-all ${
                   settings.theme.position === position
@@ -81,6 +82,7 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
             </div>
             <input
               type="checkbox"
+              data-testid="swipe-to-dismiss-toggle"
               checked={settings.theme.swipeToDismiss}
               onChange={() => {
                 onSave({
@@ -105,6 +107,7 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
             </div>
             <input
               type="checkbox"
+              data-testid="persist-pinned-toggle"
               checked={settings.theme.persistPinnedToasts}
               onChange={() => {
                 onSave({

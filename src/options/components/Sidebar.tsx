@@ -55,6 +55,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                     onClick={() => onSectionChange(item.id)}
                     className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
                     aria-current={activeSection === item.id ? 'page' : undefined}
+                    data-testid={`nav-${item.id}`}
                   >
                     {item.label}
                   </button>

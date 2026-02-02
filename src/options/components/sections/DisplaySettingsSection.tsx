@@ -41,6 +41,7 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                       ? 'border-primary bg-primary/10'
                       : 'border-border hover:border-primary/50'
                   }`}
+                  data-testid={`max-toasts-${count}`}
                 >
                   {count}
                 </button>
@@ -75,6 +76,7 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
               { value: 30, label: '30s' },
             ]}
             helperText="Set to 0 to disable auto-close (toasts stay until manually closed)"
+            testId="auto-close"
           />
 
           {/* Toast Size Selector */}
@@ -99,6 +101,7 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                       ? 'border-primary bg-primary/10'
                       : 'border-border hover:border-primary/50'
                   }`}
+                  data-testid={`toast-size-${size}`}
                 >
                   {size}
                 </button>

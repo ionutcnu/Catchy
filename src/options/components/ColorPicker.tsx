@@ -2,9 +2,15 @@ interface ColorPickerProps {
   label: string;
   value: string;
   onChange: (color: string) => void;
+  'data-testid'?: string;
 }
 
-export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
+export function ColorPicker({
+  label,
+  value,
+  onChange,
+  'data-testid': dataTestId,
+}: ColorPickerProps) {
   return (
     <div className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors">
       <div className="flex-1">
@@ -22,6 +28,7 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
             onChange={(e) => onChange(e.target.value)}
             className="w-full h-full opacity-0 cursor-pointer"
             aria-label={label}
+            data-testid={dataTestId}
           />
         </div>
       </div>

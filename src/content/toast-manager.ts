@@ -23,6 +23,29 @@ export class ToastManager {
   private customHeight = 100; // Custom height in pixels (when toastSize is 'custom')
   private readonly STORAGE_KEY_PREFIX = 'catchy-pinned-toasts-'; // LocalStorage key prefix
 
+  // Visual customization - Per-error-type colors
+  private backgroundColors = {
+    console: '#dc2626',
+    uncaught: '#ea580c',
+    rejection: '#f59e0b',
+  };
+  private textColors = {
+    console: '#ffffff',
+    uncaught: '#ffffff',
+    rejection: '#ffffff',
+  };
+
+  // Global styling
+  private borderRadius = 8;
+  private shadow = true;
+  private spacing = 12;
+
+  private globalOnIgnore?: (
+    toastId: string,
+    signature: string,
+    scope: 'session' | 'permanent'
+  ) => void; // Global onIgnore callback for all toasts
+
   /**
    * Initialize the Shadow DOM and inject styles
    */
@@ -56,6 +79,7 @@ export class ToastManager {
     // Create toast container
     this.container = document.createElement('div');
     this.container.className = 'catchy-toast-container';
+    this.container.setAttribute('data-testid', 'toast-container');
     this.updateContainerPosition(); // Apply position classes
     console.log('[Catchy ToastManager] Container created with classes:', this.container.className);
     this.shadowRoot.appendChild(this.container);
@@ -169,10 +193,8 @@ export class ToastManager {
         flex-direction: column-reverse;
       }
 
-      /* Individual Toast */
+      /* Individual Toast - colors set by error-type rules */
       .catchy-toast {
-        background: var(--catchy-bg-console);
-        color: var(--catchy-text);
         padding: var(--catchy-padding);
         border-radius: var(--catchy-radius);
         box-shadow: var(--catchy-shadow);
@@ -210,21 +232,18 @@ export class ToastManager {
         transform: translateX(-100%);
       }
 
-      /* Toast variants by error type */
+      /* Toast variants by error type - per-type colors */
       .catchy-toast[data-error-type="console.error"] {
         background: var(--catchy-bg-console);
+        color: var(--catchy-text-console);
       }
       .catchy-toast[data-error-type="uncaught"] {
         background: var(--catchy-bg-uncaught);
+        color: var(--catchy-text-uncaught);
       }
       .catchy-toast[data-error-type="unhandledrejection"] {
         background: var(--catchy-bg-rejection);
-      }
-      .catchy-toast[data-error-type="resource"] {
-        background: var(--catchy-bg-resource);
-      }
-      .catchy-toast[data-error-type="network"] {
-        background: var(--catchy-bg-network);
+        color: var(--catchy-text-rejection);
       }
 
       /* Show animation */
@@ -328,6 +347,90 @@ export class ToastManager {
 
       .catchy-toast-pinned .catchy-toast-pin {
         opacity: 1;
+      }
+
+      /* Copy Button */
+      .catchy-toast-copy {
+        background: none;
+        border: none;
+        color: var(--catchy-text);
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s, transform 0.2s, color 0.3s;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .catchy-toast-copy:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      /* Ignore Button */
+      .catchy-toast-ignore {
+        background: none;
+        border: none;
+        color: var(--catchy-text);
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s, transform 0.2s;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .catchy-toast-ignore:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      /* Ignore Menu Dropdown */
+      .catchy-ignore-menu {
+        position: absolute;
+        bottom: 100%;
+        right: 0;
+        margin-bottom: 8px;
+        background: rgba(0, 0, 0, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 4px;
+        min-width: 200px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 999999;
+        pointer-events: auto;
+      }
+
+      .catchy-ignore-menu-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+
+      .catchy-ignore-menu-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .catchy-ignore-menu-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--catchy-text);
+        margin-bottom: 2px;
+      }
+
+      .catchy-ignore-menu-description {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
       }
 
       /* Close Button */
@@ -472,11 +575,22 @@ export class ToastManager {
 
       if (errorKey === existingKey) {
         // Found duplicate - increment counter instead of creating new toast
-        existingToast.incrementCounter();
+        const newCount = existingToast.incrementCounter();
+
+        // Check if we just crossed the threshold to show ignore button
+        const threshold = options?.ignoreButtonThreshold ?? 3;
+        if (newCount >= threshold) {
+          existingToast.showIgnoreButton();
+        }
+
         if (import.meta.env.DEV) {
           console.log(
             '[Catchy ToastManager] Duplicate error, incrementing counter for:',
-            existingId
+            existingId,
+            'Count:',
+            newCount,
+            'Threshold:',
+            threshold
           );
         }
         return existingId;
@@ -510,6 +624,7 @@ export class ToastManager {
       ...options,
       position: this.position, // Pass current position for swipe direction
       swipeToDismiss: this.swipeToDismiss, // Pass swipe-to-dismiss setting
+      onIgnore: options?.onIgnore || this.globalOnIgnore, // Use provided callback or global fallback
       onClose: (closedId) => {
         this.toasts.delete(closedId);
         // Update close-all button visibility after toast removal
@@ -830,6 +945,19 @@ export class ToastManager {
   }
 
   /**
+   * Set the global onIgnore callback for all toasts
+   * This will be used as a fallback when individual toasts don't have their own onIgnore callback
+   */
+  public setOnIgnore(
+    callback: (toastId: string, signature: string, scope: 'session' | 'permanent') => void
+  ): void {
+    this.globalOnIgnore = callback;
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Global onIgnore callback set');
+    }
+  }
+
+  /**
    * Set custom width for toasts (when size is 'custom')
    */
   public setCustomWidth(width: number): void {
@@ -863,6 +991,65 @@ export class ToastManager {
    */
   public getCustomHeight(): number {
     return this.customHeight;
+  }
+
+  /**
+   * Set background colors for each error type
+   */
+  public setBackgroundColors(colors: {
+    console?: string;
+    uncaught?: string;
+    rejection?: string;
+  }): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Background colors updated:', colors);
+    }
+    this.backgroundColors = { ...this.backgroundColors, ...colors };
+    this.updateCSSVariables();
+  }
+
+  /**
+   * Set text colors for each error type
+   */
+  public setTextColors(colors: { console?: string; uncaught?: string; rejection?: string }): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Text colors updated:', colors);
+    }
+    this.textColors = { ...this.textColors, ...colors };
+    this.updateCSSVariables();
+  }
+
+  /**
+   * Set border radius for toasts
+   */
+  public setBorderRadius(radius: number): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Border radius changed:', this.borderRadius, '→', radius);
+    }
+    this.borderRadius = radius;
+    this.updateCSSVariables();
+  }
+
+  /**
+   * Set spacing/gap between toasts
+   */
+  public setSpacing(spacing: number): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Spacing changed:', this.spacing, '→', spacing);
+    }
+    this.spacing = spacing;
+    this.updateCSSVariables();
+  }
+
+  /**
+   * Set shadow enabled/disabled
+   */
+  public setShadow(enabled: boolean): void {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy ToastManager] Shadow changed:', this.shadow, '→', enabled);
+    }
+    this.shadow = enabled;
+    this.updateCSSVariables();
   }
 
   /**
@@ -902,6 +1089,20 @@ export class ToastManager {
         style.setProperty('--catchy-custom-height', `${this.customHeight}px`);
         break;
     }
+
+    // Update per-error-type colors
+    style.setProperty('--catchy-bg-console', this.backgroundColors.console);
+    style.setProperty('--catchy-bg-uncaught', this.backgroundColors.uncaught);
+    style.setProperty('--catchy-bg-rejection', this.backgroundColors.rejection);
+
+    style.setProperty('--catchy-text-console', this.textColors.console);
+    style.setProperty('--catchy-text-uncaught', this.textColors.uncaught);
+    style.setProperty('--catchy-text-rejection', this.textColors.rejection);
+
+    // Update global styling
+    style.setProperty('--catchy-radius', `${this.borderRadius}px`);
+    style.setProperty('--catchy-gap', `${this.spacing}px`);
+    style.setProperty('--catchy-shadow', this.shadow ? '0 4px 12px rgba(0, 0, 0, 0.3)' : 'none');
 
     if (import.meta.env.DEV) {
       console.log('[Catchy ToastManager] CSS variables updated for size:', this.toastSize);

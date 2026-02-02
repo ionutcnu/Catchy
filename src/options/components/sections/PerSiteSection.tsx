@@ -118,11 +118,13 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
                 if (e.key === 'Enter') handleAddSite();
               }}
               placeholder="example.com"
+              data-testid="per-site-input"
               className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <button
               type="button"
               onClick={handleAddSite}
+              data-testid="per-site-add-button"
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors primary-button"
             >
               Add Site
@@ -133,7 +135,10 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
           {newSiteHostname.trim() && (
             <div className="space-y-2">
               {isValidHostname(newSiteHostname) ? (
-                <div className="text-xs flex items-center gap-1">
+                <div
+                  className="text-xs flex items-center gap-1"
+                  data-testid="per-site-validation-success"
+                >
                   <span className="text-green-600">✓</span>
                   <span className="text-green-600">
                     Will be saved as:{' '}
@@ -143,7 +148,10 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
                   </span>
                 </div>
               ) : (
-                <div className="text-xs flex items-center gap-1">
+                <div
+                  className="text-xs flex items-center gap-1"
+                  data-testid="per-site-validation-error"
+                >
                   <span className="text-destructive">✗</span>
                   <span className="text-destructive">
                     Invalid hostname format (must include a domain extension like .com)
@@ -152,7 +160,10 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
               )}
 
               {isValidHostname(newSiteHostname) && isDuplicate(newSiteHostname) && (
-                <div className="text-xs flex items-center gap-1">
+                <div
+                  className="text-xs flex items-center gap-1"
+                  data-testid="per-site-duplicate-warning"
+                >
                   <span className="text-orange-600">⚠️</span>
                   <span className="text-orange-600">This site is already configured</span>
                 </div>
@@ -162,7 +173,7 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
 
           {/* Sites List */}
           {Object.keys(settings.perSiteSettings).length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground" data-testid="per-site-empty">
               No per-site settings configured. Add a site above to get started.
             </div>
           ) : (
@@ -170,12 +181,14 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
               {Object.entries(settings.perSiteSettings).map(([hostname, siteSettings]) => (
                 <div
                   key={hostname}
+                  data-testid={`per-site-row-${hostname}`}
                   className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <Switch
                       checked={siteSettings.enabled}
                       onCheckedChange={() => handleToggleSite(hostname)}
+                      data-testid={`per-site-switch-${hostname}`}
                     />
                     <div>
                       <div className="font-medium">{hostname}</div>
@@ -187,6 +200,7 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
                   <button
                     type="button"
                     onClick={() => handleRemoveSite(hostname)}
+                    data-testid={`per-site-remove-${hostname}`}
                     className="text-destructive hover:text-destructive/90 px-2 py-1 rounded transition-colors"
                     aria-label={`Remove ${hostname}`}
                   >

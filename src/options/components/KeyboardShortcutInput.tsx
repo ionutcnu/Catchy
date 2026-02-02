@@ -8,6 +8,7 @@ interface KeyboardShortcutInputProps {
 }
 
 const BROWSER_RESERVED_SHORTCUTS = [
+  // Browser shortcuts
   'Ctrl+T',
   'Ctrl+W',
   'Ctrl+N',
@@ -35,6 +36,12 @@ const BROWSER_RESERVED_SHORTCUTS = [
   'Cmd+R',
   'Cmd+H',
   'Cmd+D',
+  // Common typing keys (reserved to prevent conflicts with input fields)
+  'Enter',
+  'Space',
+  'Backspace',
+  'Delete',
+  'Tab',
 ];
 
 export function KeyboardShortcutInput({
@@ -102,9 +109,9 @@ export function KeyboardShortcutInput({
         hasMainKey = true;
       }
 
-      // Must have at least one modifier AND one main key
-      if (modifiers.length === 0 || !hasMainKey) {
-        setConflict('Shortcut must include at least one modifier key and one main key');
+      // Must have at least one key (can be single key OR modifier+key)
+      if (!hasMainKey) {
+        setConflict('Please press a valid key');
         return;
       }
 

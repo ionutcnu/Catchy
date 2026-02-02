@@ -27,9 +27,7 @@ export interface CatchyError {
 export type ErrorType =
   | 'console.error' // console.error() calls
   | 'uncaught' // Uncaught exceptions (window.onerror)
-  | 'unhandledrejection' // Unhandled promise rejections
-  | 'resource' // Failed resource loads (images, scripts, etc.)
-  | 'network'; // Network/fetch errors
+  | 'unhandledrejection'; // Unhandled promise rejections
 
 /**
  * Toast notification position on screen
@@ -59,8 +57,6 @@ export interface CatchySettings {
     consoleError: boolean;
     uncaught: boolean;
     unhandledRejection: boolean;
-    resource: boolean;
-    network: boolean;
   };
 
   // Ignore rules (planned feature - not yet implemented)
@@ -76,15 +72,25 @@ export interface CatchySettings {
     toastSize: ToastSize; // Size of toast notifications
     customWidth?: number; // Custom width in pixels (when toastSize is 'custom')
     customHeight?: number; // Custom height in pixels (when toastSize is 'custom')
-    maxHistorySize: number; // Max errors to keep in history (50-500)
+    maxHistorySize: number; // Max errors to keep in history (5-50)
     drawerShortcut: string; // Keyboard shortcut to open error drawer (e.g., "Alt+E")
 
-    // Visual customization
-    backgroundColor: string; // Toast background color (hex/hsl)
-    textColor: string; // Toast text color (hex/hsl)
-    borderRadius: number; // Border radius in pixels
-    shadow: boolean; // Enable/disable shadow
-    spacing: number; // Gap between toasts in pixels
+    // Visual customization - Per-error-type colors
+    backgroundColors: {
+      console: string; // Background for console.error
+      uncaught: string; // Background for uncaught exceptions
+      rejection: string; // Background for unhandled promise rejections
+    };
+    textColors: {
+      console: string; // Text color for console.error
+      uncaught: string; // Text color for uncaught exceptions
+      rejection: string; // Text color for unhandled promise rejections
+    };
+
+    // Global styling
+    borderRadius: number; // Border radius in pixels (0-24)
+    shadow: boolean; // Enable/disable drop shadow
+    spacing: number; // Gap between toasts in pixels (4-32)
   };
 
   // Rate limiting
@@ -127,8 +133,6 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     consoleError: true,
     uncaught: true,
     unhandledRejection: true,
-    resource: false,
-    network: false,
   },
   // ignoreRules: [], // Planned feature - not yet implemented
   theme: {
@@ -140,14 +144,24 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     toastSize: 'medium',
     customWidth: 400,
     customHeight: 100,
-    maxHistorySize: 200,
-    drawerShortcut: 'Alt+E', // Default keyboard shortcut
+    maxHistorySize: 25,
+    drawerShortcut: '`', // Default keyboard shortcut (backtick/tilde key)
 
-    // Visual customization defaults
-    backgroundColor: '#dc2626', // Red-600 (error color)
-    textColor: '#ffffff', // White
+    // Visual customization defaults - Per-error-type colors
+    backgroundColors: {
+      console: '#dc2626', // Red-600 (console.error)
+      uncaught: '#ea580c', // Orange-600 (uncaught exceptions)
+      rejection: '#f59e0b', // Amber-500 (promise rejections)
+    },
+    textColors: {
+      console: '#ffffff', // White for dark red
+      uncaught: '#ffffff', // White for dark orange
+      rejection: '#ffffff', // White for amber
+    },
+
+    // Global styling defaults
     borderRadius: 8, // 8px rounded corners
-    shadow: true, // Shadow enabled
+    shadow: true, // Drop shadow enabled
     spacing: 12, // 12px gap between toasts
   },
   rateLimit: {
@@ -155,3 +169,28 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     intervalMs: 4000,
   },
 };
+
+/**
+ * Calculate the best text color (black or white) for a given background color
+ * Uses relative luminance formula from WCAG 2.0
+ * @param bgColor - Background color in hex format (e.g., '#dc2626')
+ * @returns '#000000' for light backgrounds, '#ffffff' for dark backgrounds
+ */
+export function getAutoTextColor(bgColor: string): string {
+  // Remove # if present
+  const hex = bgColor.replace('#', '');
+
+  // Parse RGB values
+  const r = Number.parseInt(hex.substring(0, 2), 16) / 255;
+  const g = Number.parseInt(hex.substring(2, 4), 16) / 255;
+  const b = Number.parseInt(hex.substring(4, 6), 16) / 255;
+
+  // Calculate relative luminance
+  const luminance =
+    0.2126 * (r <= 0.03928 ? r / 12.92 : ((r + 0.055) / 1.055) ** 2.4) +
+    0.7152 * (g <= 0.03928 ? g / 12.92 : ((g + 0.055) / 1.055) ** 2.4) +
+    0.0722 * (b <= 0.03928 ? b / 12.92 : ((b + 0.055) / 1.055) ** 2.4);
+
+  // Use white text for dark backgrounds (luminance < 0.5), black for light
+  return luminance > 0.5 ? '#000000' : '#ffffff';
+}

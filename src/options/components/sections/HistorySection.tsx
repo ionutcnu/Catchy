@@ -24,9 +24,9 @@ export function HistorySection({ settings, onSave }: HistorySectionProps) {
           <NumberInputWithPresets
             label="Max errors in history"
             value={settings.theme.maxHistorySize}
-            min={50}
-            max={500}
-            step={10}
+            min={5}
+            max={50}
+            step={5}
             unit="errors"
             onChange={(value) => {
               onSave({
@@ -37,7 +37,7 @@ export function HistorySection({ settings, onSave }: HistorySectionProps) {
                 },
               });
             }}
-            presets={[50, 100, 200, 500]}
+            presets={[5, 10, 25, 50]}
             helperText="Errors are stored during the page session."
             warningText="Higher values use more memory"
           />
@@ -46,7 +46,7 @@ export function HistorySection({ settings, onSave }: HistorySectionProps) {
           <div className="pt-4 border-t border-border">
             <KeyboardShortcutInput
               label="📊 Drawer Keyboard Shortcut"
-              value={settings.theme.drawerShortcut || 'Alt+E'}
+              value={settings.theme.drawerShortcut || '`'}
               onChange={(value) => {
                 onSave({
                   ...settings,
@@ -56,7 +56,7 @@ export function HistorySection({ settings, onSave }: HistorySectionProps) {
                   },
                 });
               }}
-              helperText="Customize the keyboard shortcut to open the error history drawer on any webpage where Catchy is active."
+              helperText="Press any key or key combination. Single keys (like 'E' or '~') and combinations (like 'Alt+E') are supported."
             />
           </div>
         </div>

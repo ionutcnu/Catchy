@@ -109,20 +109,17 @@ let enabledErrorTypes = {
   resource: false,
   network: false,
 };
-let drawerShortcut = 'Alt+E'; // Default keyboard shortcut for opening drawer
+let drawerShortcut = '`'; // Default keyboard shortcut for opening drawer (backtick)
 // let ignoreButtonThreshold = 3; // Show ignore button after X error occurrences (unused)
 
 /**
- * Error ignore tracking (3 scopes: session, browser, permanent)
+ * Error ignore tracking (2 scopes: session, permanent)
+ * - Session: In-memory Set, clears on page reload
+ * - Permanent: chrome.storage.local, persists across browser restarts
  */
-// Commented out - currently unused
-/* let sessionIgnoreList: Set<string> = new Set(); // Session-only ignores (clears on page reload)
-let errorCountsPerTab: Map<string, number> = new Map(); // Error signature -> count
-const TAB_ID = `tab-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`; // Unique ID for this tab/page session
-const ERROR_COUNTS_STORAGE_KEY = `catchy-error-counts-${TAB_ID}`;
-const BROWSER_IGNORE_STORAGE_KEY = 'catchy-ignore-browser'; // sessionStorage key for browser-scope ignores
+const sessionIgnoreList: Set<string> = new Set(); // Session-only ignores (clears on page reload)
+const permanentIgnoreList: Set<string> = new Set(); // Permanent ignores (cached from chrome.storage.local)
 const MAX_SESSION_IGNORES = 1000; // Maximum number of errors to track in session ignore list
-const MAX_ERROR_COUNTS = 1000; // Maximum number of error signatures to track counts for */
 
 /**
  * Track if extension context has been invalidated
@@ -157,17 +154,15 @@ const MAX_ERROR_COUNTS = 1000; // Maximum number of error signatures to track co
  * Generate error signature for deduplication and ignore matching
  * Format: type::message (ignores file/line variations)
  */
-// Commented out - currently unused
-// function getErrorSignature(error: { type: string; message: string }): string {
-//   return `${error.type}::${error.message}`;
-// }
+function getErrorSignature(error: { type: string; message: string }): string {
+  return `${error.type}::${error.message}`;
+}
 
 /**
- * Check if error should be shown (not in any ignore list)
+ * Check if error should be shown (not in session or permanent ignore list)
  */
-// Commented out - currently unused
-/* function shouldShowError(signature: string): boolean {
-  // Check session ignores
+function shouldShowError(signature: string): boolean {
+  // Check session ignores (cleared on page reload)
   if (sessionIgnoreList.has(signature)) {
     if (import.meta.env.DEV) {
       console.log('[Catchy Content] Error blocked by session ignore:', signature);
@@ -175,36 +170,25 @@ const MAX_ERROR_COUNTS = 1000; // Maximum number of error signatures to track co
     return false;
   }
 
-  // Check browser-scope ignores (sessionStorage)
-  try {
-    const browserIgnores = sessionStorage.getItem(BROWSER_IGNORE_STORAGE_KEY);
-    if (browserIgnores) {
-      const ignoreList: string[] = JSON.parse(browserIgnores);
-      if (ignoreList.includes(signature)) {
-        if (import.meta.env.DEV) {
-          console.log('[Catchy Content] Error blocked by browser ignore:', signature);
-        }
-        return false;
-      }
+  // Check permanent ignores (chrome.storage.local) - synchronous check using cached value
+  if (permanentIgnoreList.has(signature)) {
+    if (import.meta.env.DEV) {
+      console.log('[Catchy Content] Error blocked by permanent ignore:', signature);
     }
-  } catch (error) {
-    console.error('[Catchy Content] Failed to check browser ignores:', error);
+    return false;
   }
-
-  // TODO: Check permanent ignores (ignoreRules) - will implement when adding ignore button
 
   if (import.meta.env.DEV) {
     console.log('[Catchy Content] Error NOT ignored, will show:', signature);
   }
   return true; // Not ignored
-} */
+}
 
 /**
  * Add error signature to session ignore list with size limiting
  * Prevents unbounded growth by removing oldest entries when limit is reached
  */
-// Commented out - currently unused
-/* function addToSessionIgnoreList(signature: string): void {
+function addToSessionIgnoreList(signature: string): void {
   // Check if at capacity
   if (sessionIgnoreList.size >= MAX_SESSION_IGNORES) {
     // Remove oldest entry (first item in Set)
@@ -226,7 +210,7 @@ const MAX_ERROR_COUNTS = 1000; // Maximum number of error signatures to track co
       `[Catchy Content] Session ignore list is at ${sessionIgnoreList.size}/${MAX_SESSION_IGNORES} (${Math.round((sessionIgnoreList.size / MAX_SESSION_IGNORES) * 100)}%)`
     );
   }
-} */
+}
 
 /**
  * Load error counts from storage for this tab
@@ -321,6 +305,29 @@ const MAX_ERROR_COUNTS = 1000; // Maximum number of error signatures to track co
 } */
 
 /**
+ * Load permanent ignore list from chrome.storage.local
+ * This caches the list in memory for fast checks
+ */
+async function loadPermanentIgnores() {
+  try {
+    const result = await chrome.storage.local.get(['ignoredErrorSignatures']);
+    const ignoreList: string[] = result.ignoredErrorSignatures || [];
+
+    // Clear and populate the in-memory cache
+    permanentIgnoreList.clear();
+    for (const signature of ignoreList) {
+      permanentIgnoreList.add(signature);
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('[Catchy Content] Loaded permanent ignores:', ignoreList.length);
+    }
+  } catch (error) {
+    console.error('[Catchy Content] Failed to load permanent ignores:', error);
+  }
+}
+
+/**
  * Load settings from Chrome storage and update our cache
  * This runs once when the content script first loads
  */
@@ -328,6 +335,32 @@ async function loadSettings() {
   try {
     const result = await chrome.storage.sync.get(['settings']);
     const settings = result.settings || DEFAULT_SETTINGS;
+
+    // Migrate old backgroundColor/textColor to new structure
+    if (settings.theme?.backgroundColor && !settings.theme?.backgroundColors) {
+      const oldBg = settings.theme.backgroundColor;
+      settings.theme.backgroundColors = {
+        console: oldBg,
+        uncaught: oldBg,
+        rejection: oldBg,
+        resource: oldBg,
+        network: oldBg,
+      };
+      delete settings.theme.backgroundColor;
+      console.log('[Catchy Content] Migrated old backgroundColor to backgroundColors');
+    }
+    if (settings.theme?.textColor && !settings.theme?.textColors) {
+      const oldText = settings.theme.textColor;
+      settings.theme.textColors = {
+        console: oldText,
+        uncaught: oldText,
+        rejection: oldText,
+        resource: oldText,
+        network: oldText,
+      };
+      delete settings.theme.textColor;
+      console.log('[Catchy Content] Migrated old textColor to textColors');
+    }
 
     // Update global enabled state
     isGloballyEnabled = settings.enabled ?? DEFAULT_SETTINGS.enabled;
@@ -398,6 +431,23 @@ async function loadSettings() {
     }
     if (settings.theme?.customHeight !== undefined) {
       toastManager.setCustomHeight(settings.theme.customHeight);
+    }
+
+    // Apply visual customization settings
+    if (settings.theme?.backgroundColors) {
+      toastManager.setBackgroundColors(settings.theme.backgroundColors);
+    }
+    if (settings.theme?.textColors) {
+      toastManager.setTextColors(settings.theme.textColors);
+    }
+    if (settings.theme?.borderRadius !== undefined) {
+      toastManager.setBorderRadius(settings.theme.borderRadius);
+    }
+    if (settings.theme?.shadow !== undefined) {
+      toastManager.setShadow(settings.theme.shadow);
+    }
+    if (settings.theme?.spacing !== undefined) {
+      toastManager.setSpacing(settings.theme.spacing);
     }
 
     // Apply max history size setting
@@ -517,24 +567,25 @@ window.addEventListener('message', (event) => {
 
   // Handle the error
   if (event.data.type === 'ERROR_CAPTURED') {
-    // Check 1: Global toggle - if globally disabled, ignore all errors
-    if (!isGloballyEnabled) {
-      console.log('[Catchy Content] Globally disabled, ignoring error');
-      return;
-    }
-
-    // Check 2: Per-site toggle - if disabled for this site, ignore
+    // Check 1: Is extension enabled for current site? (combines global + per-site logic)
     if (!isEnabledForCurrentSite) {
       console.log('[Catchy Content] Disabled for', window.location.hostname, ', ignoring error');
       return;
     }
 
-    // Check 3: Error type filter
+    // Check 2: Error type filter
     const errorType = event.data.error.type;
     const isErrorTypeEnabled = isErrorTypeAllowed(errorType);
 
     if (!isErrorTypeEnabled) {
       console.log('[Catchy Content] Error type disabled:', errorType);
+      return;
+    }
+
+    // Check 3: Ignore list (session + permanent)
+    const errorSignature = getErrorSignature(event.data.error);
+    if (!shouldShowError(errorSignature)) {
+      console.log('[Catchy Content] Error ignored:', errorSignature);
       return;
     }
 
@@ -544,51 +595,59 @@ window.addEventListener('message', (event) => {
 
 /**
  * Handle error ignore action from Toast component
+ * Supports session (until reload) and permanent (forever) scopes
  */
-// Commented out - currently unused
-/* function handleErrorIgnore(
-  toastId: string,
-  signature: string,
-  scope: 'session' | 'browser' | 'permanent'
-): void {
+function handleErrorIgnore(signature: string, scope: 'session' | 'permanent'): void {
   console.log('[Catchy Content] === IGNORING ERROR ===');
   console.log('[Catchy Content] Scope:', scope);
   console.log('[Catchy Content] Signature to ignore:', signature);
-  console.log('[Catchy Content] Signature length:', signature.length);
-  console.log('[Catchy Content] Signature characters:', signature.split('').map(c => c.charCodeAt(0)));
 
   if (scope === 'session') {
     // Add to session ignore list (clears on page reload)
     addToSessionIgnoreList(signature);
-    console.log('[Catchy Content] ✓ Added to session ignore list');
-    console.log('[Catchy Content] Total session ignores:', sessionIgnoreList.size);
-    console.log('[Catchy Content] List contents:', Array.from(sessionIgnoreList));
-  } else if (scope === 'browser') {
-    // Add to browser-scope ignore list (sessionStorage - clears on browser close)
-    try {
-      const existing = sessionStorage.getItem(BROWSER_IGNORE_STORAGE_KEY);
-      const ignoreList: string[] = existing ? JSON.parse(existing) : [];
-      if (!ignoreList.includes(signature)) {
-        ignoreList.push(signature);
-        sessionStorage.setItem(BROWSER_IGNORE_STORAGE_KEY, JSON.stringify(ignoreList));
-        console.log('[Catchy Content] Added to browser ignore list. Total browser ignores:', ignoreList.length);
-      }
-    } catch (error) {
-      console.error('[Catchy Content] Failed to save browser ignore:', error);
+    if (import.meta.env.DEV) {
+      console.log('[Catchy Content] ✓ Added to session ignore list');
+      console.log('[Catchy Content] Total session ignores:', sessionIgnoreList.size);
     }
   } else if (scope === 'permanent') {
-    // Add to permanent ignore list (chrome.storage.sync ignoreRules)
-    // TODO: Implement permanent ignore rules
-    // For now, just use browser scope as fallback
-    console.log('[Catchy Content] Permanent ignore not yet implemented, using browser scope:', signature);
-    handleErrorIgnore(toastId, signature, 'browser');
-  }
+    // Add to permanent ignore list (chrome.storage.local)
+    chrome.storage.local.get(['ignoredErrorSignatures'], (result) => {
+      if (chrome.runtime.lastError) {
+        console.error(
+          '[Catchy Content] Failed to load permanent ignores:',
+          chrome.runtime.lastError
+        );
+        return;
+      }
 
-  // Remove from error counts since it's now ignored
-  errorCountsPerTab.delete(signature);
-  saveErrorCounts();
-  console.log('[Catchy Content] Removed error count for ignored signature');
-} */
+      const ignoreList: string[] = result.ignoredErrorSignatures || [];
+      if (!ignoreList.includes(signature)) {
+        ignoreList.push(signature);
+
+        chrome.storage.local.set({ ignoredErrorSignatures: ignoreList }, () => {
+          if (chrome.runtime.lastError) {
+            console.error(
+              '[Catchy Content] Failed to save permanent ignore:',
+              chrome.runtime.lastError
+            );
+            return;
+          }
+
+          // Update in-memory cache
+          permanentIgnoreList.add(signature);
+          console.log(
+            '[Catchy Content] ✓ Added to permanent ignore list. Total:',
+            ignoreList.length
+          );
+        });
+      } else {
+        if (import.meta.env.DEV) {
+          console.log('[Catchy Content] Signature already in permanent ignore list');
+        }
+      }
+    });
+  }
+}
 
 /**
  * Step 3: Show a toast notification for the error
@@ -729,6 +788,28 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       console.log('[Catchy Content] Custom height changed to:', newSettings.theme.customHeight);
     }
 
+    // Update visual customization settings if changed
+    if (newSettings.theme?.backgroundColors) {
+      toastManager.setBackgroundColors(newSettings.theme.backgroundColors);
+      console.log('[Catchy Content] Background colors changed');
+    }
+    if (newSettings.theme?.textColors) {
+      toastManager.setTextColors(newSettings.theme.textColors);
+      console.log('[Catchy Content] Text colors changed');
+    }
+    if (newSettings.theme?.borderRadius !== undefined) {
+      toastManager.setBorderRadius(newSettings.theme.borderRadius);
+      console.log('[Catchy Content] Border radius changed to:', newSettings.theme.borderRadius);
+    }
+    if (newSettings.theme?.shadow !== undefined) {
+      toastManager.setShadow(newSettings.theme.shadow);
+      console.log('[Catchy Content] Shadow changed to:', newSettings.theme.shadow);
+    }
+    if (newSettings.theme?.spacing !== undefined) {
+      toastManager.setSpacing(newSettings.theme.spacing);
+      console.log('[Catchy Content] Spacing changed to:', newSettings.theme.spacing);
+    }
+
     // Update max history size if changed
     if (newSettings.theme?.maxHistorySize !== undefined) {
       errorHistoryManager.setMaxSize(newSettings.theme.maxHistorySize);
@@ -801,8 +882,16 @@ async function initializeExtension() {
   // This ensures the position is set before the container is created
   await loadSettings();
 
+  // Load permanent ignore list
+  await loadPermanentIgnores();
+
   // Initialize ToastManager with Shadow DOM (will use the position from settings)
   toastManager.initialize();
+
+  // Set up ignore callback for toasts
+  toastManager.setOnIgnore((_toastId, signature, scope) => {
+    handleErrorIgnore(signature, scope);
+  });
 
   // Load pinned toasts if persistence is enabled
   toastManager.loadPinnedToasts();

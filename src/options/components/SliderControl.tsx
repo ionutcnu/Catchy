@@ -9,6 +9,7 @@ interface SliderControlProps {
   onChange: (value: number) => void;
   displayValue?: string;
   helperText?: string;
+  'data-testid'?: string;
 }
 
 export function SliderControl({
@@ -20,6 +21,7 @@ export function SliderControl({
   onChange,
   displayValue,
   helperText,
+  'data-testid': dataTestId,
 }: SliderControlProps) {
   const id = useId();
 
@@ -40,6 +42,7 @@ export function SliderControl({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+        data-testid={dataTestId}
       />
       {helperText && <p className="text-xs text-muted-foreground mt-1">{helperText}</p>}
     </div>

@@ -11,6 +11,7 @@ interface HybridSliderInputProps {
   unit?: string;
   presets?: Array<{ value: number; label: string }>;
   helperText?: string;
+  testId?: string;
 }
 
 export function HybridSliderInput({
@@ -23,6 +24,7 @@ export function HybridSliderInput({
   unit,
   presets,
   helperText,
+  testId,
 }: HybridSliderInputProps) {
   const id = useId();
   const sliderId = useId();
@@ -50,6 +52,7 @@ export function HybridSliderInput({
             value={value}
             onChange={handleInputChange}
             className="w-20 px-2 py-1 border border-border rounded text-sm text-right bg-background"
+            data-testid={testId ? `${testId}-input` : undefined}
           />
           {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
         </div>
@@ -65,6 +68,7 @@ export function HybridSliderInput({
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
         aria-label={`${label} slider`}
+        data-testid={testId ? `${testId}-slider` : undefined}
       />
 
       {presets && presets.length > 0 && (
@@ -80,6 +84,7 @@ export function HybridSliderInput({
                 }
               }}
               className="px-2 py-1 text-xs border border-border rounded hover:bg-accent transition-colors"
+              data-testid={testId ? `${testId}-preset-${preset.value}` : undefined}
             >
               {preset.label}
             </button>
