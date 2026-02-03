@@ -7,6 +7,15 @@ interface DisplaySettingsSectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * DisplaySettingsSection - Configure toast display behavior
+ *
+ * Controls max toasts on screen, auto-close timer, and toast size.
+ * Provides preset buttons for common configurations.
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSectionProps) {
   return (
     <Card className="settings-card">
@@ -41,6 +50,7 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                       ? 'border-primary bg-primary/10'
                       : 'border-border hover:border-primary/50'
                   }`}
+                  data-testid={`max-toasts-${count}`}
                 >
                   {count}
                 </button>
@@ -75,6 +85,7 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
               { value: 30, label: '30s' },
             ]}
             helperText="Set to 0 to disable auto-close (toasts stay until manually closed)"
+            testId="auto-close"
           />
 
           {/* Toast Size Selector */}
@@ -99,6 +110,7 @@ export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSect
                       ? 'border-primary bg-primary/10'
                       : 'border-border hover:border-primary/50'
                   }`}
+                  data-testid={`toast-size-${size}`}
                 >
                   {size}
                 </button>

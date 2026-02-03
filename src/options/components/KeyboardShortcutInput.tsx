@@ -8,6 +8,7 @@ interface KeyboardShortcutInputProps {
 }
 
 const BROWSER_RESERVED_SHORTCUTS = [
+  // Browser shortcuts
   'Ctrl+T',
   'Ctrl+W',
   'Ctrl+N',
@@ -35,7 +36,27 @@ const BROWSER_RESERVED_SHORTCUTS = [
   'Cmd+R',
   'Cmd+H',
   'Cmd+D',
+  // Common typing keys (reserved to prevent conflicts with input fields)
+  'Enter',
+  'Space',
+  'Backspace',
+  'Delete',
+  'Tab',
 ];
+
+/**
+ * Normalize keyboard event key for consistent storage
+ *
+ * Browsers send ' ' (space character) or 'Space' string inconsistently.
+ * This ensures 'Space' is always stored for consistent comparison.
+ *
+ * @param key - KeyboardEvent.key value
+ * @returns Normalized key string
+ */
+function normalizeKey(key: string): string {
+  if (key === ' ') return 'Space';
+  return key;
+}
 
 export function KeyboardShortcutInput({
   label,
@@ -90,7 +111,7 @@ export function KeyboardShortcutInput({
       }
 
       // Add main key (not a modifier)
-      const mainKey = e.key;
+      const mainKey = normalizeKey(e.key);
       let hasMainKey = false;
       if (!['Control', 'Alt', 'Shift', 'Meta'].includes(mainKey) && mainKey.length > 0) {
         // Normalize key names
@@ -102,9 +123,16 @@ export function KeyboardShortcutInput({
         hasMainKey = true;
       }
 
-      // Must have at least one modifier AND one main key
-      if (modifiers.length === 0 || !hasMainKey) {
-        setConflict('Shortcut must include at least one modifier key and one main key');
+      // Must have at least one key
+      if (!hasMainKey) {
+        setConflict('Please press a valid key');
+        return;
+      }
+
+      // Require at least one modifier for single letters/numbers to avoid conflicts
+      const isSingleChar = mainKey.length === 1 && /[a-zA-Z0-9]/.test(mainKey);
+      if (isSingleChar && modifiers.length === 0) {
+        setConflict('Single letters/numbers require a modifier (Ctrl, Alt, Shift, or Cmd)');
         return;
       }
 

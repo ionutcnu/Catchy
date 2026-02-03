@@ -5,6 +5,17 @@ interface HeaderProps {
   saveError: string | null;
 }
 
+/**
+ * Header - Settings page header with dark mode toggle and save status
+ *
+ * Displays page title, dark mode toggle button, and temporary notifications
+ * for save success or errors. Notifications auto-dismiss after timeout.
+ *
+ * @param isDarkMode - Current dark mode state
+ * @param onToggleDarkMode - Callback to toggle dark mode
+ * @param saved - Show success notification
+ * @param saveError - Error message to display (null if no error)
+ */
 export function Header({ isDarkMode, onToggleDarkMode, saved, saveError }: HeaderProps) {
   return (
     <>

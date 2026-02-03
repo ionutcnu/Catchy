@@ -6,6 +6,15 @@ interface ToastPositionSectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * ToastPositionSection - Configure toast screen position
+ *
+ * Provides visual grid for selecting toast notification position
+ * (top-left, top-right, bottom-left, bottom-right).
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function ToastPositionSection({ settings, onSave }: ToastPositionSectionProps) {
   const handlePositionChange = (position: ToastPosition) => {
     onSave({
@@ -33,6 +42,7 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
               <button
                 key={position}
                 type="button"
+                data-testid={`toast-position-${position}`}
                 onClick={() => handlePositionChange(position)}
                 className={`p-6 rounded-lg border-2 transition-all ${
                   settings.theme.position === position
@@ -81,6 +91,7 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
             </div>
             <input
               type="checkbox"
+              data-testid="swipe-to-dismiss-toggle"
               checked={settings.theme.swipeToDismiss}
               onChange={() => {
                 onSave({
@@ -105,6 +116,7 @@ export function ToastPositionSection({ settings, onSave }: ToastPositionSectionP
             </div>
             <input
               type="checkbox"
+              data-testid="persist-pinned-toggle"
               checked={settings.theme.persistPinnedToasts}
               onChange={() => {
                 onSave({
