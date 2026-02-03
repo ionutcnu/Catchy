@@ -9,11 +9,24 @@ export class ExtensionPage {
 
   /**
    * Check if extension is loaded (shadow host exists)
+   * Waits up to 3 seconds for extension to initialize
    */
-  async isLoaded(): Promise<boolean> {
-    return await this.page.evaluate(() => {
-      return !!document.querySelector('#catchy-toast-host');
-    });
+  async isLoaded(timeout: number = 3000): Promise<boolean> {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeout) {
+      const loaded = await this.page.evaluate(() => {
+        return !!document.querySelector('#catchy-toast-host');
+      });
+
+      if (loaded) {
+        return true;
+      }
+
+      await this.page.waitForTimeout(100);
+    }
+
+    return false;
   }
 
   /**
