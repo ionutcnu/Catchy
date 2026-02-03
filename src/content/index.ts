@@ -870,6 +870,12 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       console.warn('[Catchy Content] Error drawer not initialized yet, cannot apply dark mode');
     }
   }
+
+  // Watch for permanent ignore changes from other tabs (local storage)
+  if (areaName === 'local' && changes.ignoredErrorSignatures) {
+    console.log('[Catchy Content] Permanent ignores changed in another tab, reloading...');
+    loadPermanentIgnores();
+  }
 });
 
 /**

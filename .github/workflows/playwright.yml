@@ -48,7 +48,7 @@ jobs:
         id: playwright-cache
         with:
           path: ~\AppData\Local\ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock', 'package.json') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
 

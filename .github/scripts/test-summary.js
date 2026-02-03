@@ -91,7 +91,7 @@ try {
       if (finalOutcome === 'failed' || finalOutcome === 'unexpected' ||
           finalOutcome === 'timedOut') {
         const title = spec.title;
-        const file = spec.file.replace(process.cwd(), '').replace(/\\/g, '/');
+        const file = spec.file.replace(process.cwd(), '').replace(/^[/\\]/, '').replace(/\\/g, '/');
         const error = finalResult?.error?.message || 'Unknown error';
         console.log(`**${title}**`);
         console.log(`- File: \`${file}\``);
