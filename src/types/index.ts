@@ -127,7 +127,7 @@ export type ExtensionMessage =
  * Default settings for first-time users
  */
 export const DEFAULT_SETTINGS: CatchySettings = {
-  enabled: false, // Disabled globally by default - opt-in per site
+  enabled: true, // Enabled globally by default
   perSiteSettings: {},
   errorTypes: {
     consoleError: true,
@@ -138,9 +138,9 @@ export const DEFAULT_SETTINGS: CatchySettings = {
   theme: {
     position: 'bottom-right',
     maxToasts: 5,
-    autoCloseMs: 0,
+    autoCloseMs: 5000,
     swipeToDismiss: true,
-    persistPinnedToasts: false,
+    persistPinnedToasts: true,
     toastSize: 'medium',
     customWidth: 400,
     customHeight: 100,

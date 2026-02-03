@@ -28,8 +28,6 @@ interface CatchySettings {
     consoleError: boolean;
     uncaught: boolean;
     unhandledRejection: boolean;
-    resource: boolean;
-    network: boolean;
   };
   ignoreRules?: IgnoreRule[]; // Optional - planned feature not yet implemented
   theme: {
@@ -58,27 +56,25 @@ interface CatchySettings {
 // Inlined from src/types/index.ts:123 to avoid code-splitting issues with Chrome content scripts.
 // IMPORTANT: Any changes to these defaults must be kept in sync with the canonical definition.
 const DEFAULT_SETTINGS: CatchySettings = {
-  enabled: false,
+  enabled: true,
   perSiteSettings: {},
   errorTypes: {
     consoleError: true,
     uncaught: true,
     unhandledRejection: true,
-    resource: false,
-    network: false,
   },
   // ignoreRules: [], // Planned feature - not yet implemented
   theme: {
     position: 'bottom-right',
     maxToasts: 5,
-    autoCloseMs: 0,
+    autoCloseMs: 5000,
     swipeToDismiss: true,
-    persistPinnedToasts: false,
+    persistPinnedToasts: true,
     toastSize: 'medium',
     customWidth: 400,
     customHeight: 100,
     maxHistorySize: 25,
-    drawerShortcut: 'Alt+E',
+    drawerShortcut: '`',
     backgroundColor: '#dc2626',
     textColor: '#ffffff',
     borderRadius: 8,
