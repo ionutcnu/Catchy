@@ -56,7 +56,7 @@ interface CatchySettings {
 // Inlined from src/types/index.ts:123 to avoid code-splitting issues with Chrome content scripts.
 // IMPORTANT: Any changes to these defaults must be kept in sync with the canonical definition.
 const DEFAULT_SETTINGS: CatchySettings = {
-  enabled: true,
+  enabled: false,
   perSiteSettings: {},
   errorTypes: {
     consoleError: true,
@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS: CatchySettings = {
   theme: {
     position: 'bottom-right',
     maxToasts: 5,
-    autoCloseMs: 5000,
+    autoCloseMs: 0,
     swipeToDismiss: true,
     persistPinnedToasts: true,
     toastSize: 'medium',
