@@ -57,6 +57,7 @@ test.describe('Visual Customization', () => {
     await settings.setBorderRadius(0);
     await page.waitForTimeout(1000);
     await settings.close();
+    await page.waitForTimeout(500); // Wait for settings to propagate before navigation
 
     await page.goto(TEST_URL);
     await page.evaluate(() => console.error('Border radius test'));

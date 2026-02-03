@@ -34,6 +34,7 @@ test.describe('Toast Position', () => {
       await page.waitForTimeout(1000);
 
       await settings.close();
+      await page.waitForTimeout(500); // Wait for settings to propagate before navigation
 
       // Navigate to test page
       await page.goto(TEST_URL);
