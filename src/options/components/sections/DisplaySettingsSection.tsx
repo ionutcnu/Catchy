@@ -7,6 +7,15 @@ interface DisplaySettingsSectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * DisplaySettingsSection - Configure toast display behavior
+ *
+ * Controls max toasts on screen, auto-close timer, and toast size.
+ * Provides preset buttons for common configurations.
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function DisplaySettingsSection({ settings, onSave }: DisplaySettingsSectionProps) {
   return (
     <Card className="settings-card">

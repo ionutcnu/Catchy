@@ -9,6 +9,7 @@ on:
       - '.vscode/**'
       - '.github/**'
       - '!.github/workflows/playwright.yml'
+      - '!.github/scripts/**' # Test infrastructure changes should trigger CI
 
 # Cancel outdated runs when new commits are pushed
 concurrency:
@@ -28,7 +29,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: '1.1.42' # Pinned to avoid breaking changes
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4

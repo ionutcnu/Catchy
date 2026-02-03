@@ -38,7 +38,6 @@ test.describe('Toast Position', () => {
       // Navigate to test page
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
 
       // Trigger error
       await page.evaluate(() => console.error('Test: Position top-left'));
@@ -75,7 +74,7 @@ test.describe('Toast Position', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Position top-right'));
       expect(await ext.waitForToast(3000)).toBe(true);
@@ -111,7 +110,7 @@ test.describe('Toast Position', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Position bottom-left'));
       expect(await ext.waitForToast(3000)).toBe(true);
@@ -147,7 +146,7 @@ test.describe('Toast Position', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Position bottom-right'));
       expect(await ext.waitForToast(3000)).toBe(true);

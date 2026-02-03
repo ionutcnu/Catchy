@@ -2,6 +2,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const VERSION = '0.2.0';
 
+/**
+ * AboutSection - Extension information and credits
+ *
+ * Displays extension version, creator information, feature list,
+ * and external links (GitHub, changelog, documentation).
+ */
 export function AboutSection() {
   return (
     <>

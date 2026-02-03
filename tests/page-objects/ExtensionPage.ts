@@ -299,14 +299,35 @@ export class ExtensionPage {
   /**
    * Open error drawer using keyboard shortcut (default: ` backtick)
    */
+  /**
+   * Open error drawer using keyboard shortcut
+   *
+   * Parses shortcuts like "Alt+E", "Ctrl+Shift+K" into
+   * modifier options and base key for Playwright.
+   *
+   * @param shortcut - Keyboard shortcut string (e.g., "Alt+E", "Ctrl+Shift+K")
+   */
   async openDrawer(shortcut: string = '`'): Promise<void> {
     // Handle single key shortcuts
     if (!shortcut.includes('+')) {
       await this.page.keyboard.press(shortcut);
     } else {
-      // Handle combination shortcuts
-      const [modifier, key] = shortcut.split('+');
-      await this.page.keyboard.press(`${modifier}+${key}`);
+      // Parse multi-part shortcuts (e.g., "Ctrl+Shift+K")
+      const parts = shortcut.split('+');
+      const baseKey = parts[parts.length - 1]; // Last part is the key
+      const modifiers = parts.slice(0, -1); // Everything before is modifiers
+
+      // Build Playwright keyboard options
+      const options: { control?: boolean; alt?: boolean; shift?: boolean; meta?: boolean } = {};
+      for (const mod of modifiers) {
+        const lower = mod.toLowerCase();
+        if (lower === 'ctrl' || lower === 'control') options.control = true;
+        else if (lower === 'alt') options.alt = true;
+        else if (lower === 'shift') options.shift = true;
+        else if (lower === 'meta' || lower === 'cmd') options.meta = true;
+      }
+
+      await this.page.keyboard.press(baseKey, options);
     }
     await this.page.waitForTimeout(500); // Wait for drawer animation
   }

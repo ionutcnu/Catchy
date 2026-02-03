@@ -44,6 +44,20 @@ const BROWSER_RESERVED_SHORTCUTS = [
   'Tab',
 ];
 
+/**
+ * Normalize keyboard event key for consistent storage
+ *
+ * Browsers send ' ' (space character) or 'Space' string inconsistently.
+ * This ensures 'Space' is always stored for consistent comparison.
+ *
+ * @param key - KeyboardEvent.key value
+ * @returns Normalized key string
+ */
+function normalizeKey(key: string): string {
+  if (key === ' ') return 'Space';
+  return key;
+}
+
 export function KeyboardShortcutInput({
   label,
   value,
@@ -97,7 +111,7 @@ export function KeyboardShortcutInput({
       }
 
       // Add main key (not a modifier)
-      const mainKey = e.key;
+      const mainKey = normalizeKey(e.key);
       let hasMainKey = false;
       if (!['Control', 'Alt', 'Shift', 'Meta'].includes(mainKey) && mainKey.length > 0) {
         // Normalize key names

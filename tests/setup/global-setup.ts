@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import { platform } from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -21,10 +22,12 @@ async function globalSetup() {
   console.log('[Global Setup] Building extension...');
 
   try {
-    // Build extension (Windows-compatible command)
+    // Build extension with cross-platform shell detection
+    // Windows uses PowerShell, Unix systems use default shell
+    const isWindows = platform() === 'win32';
     execSync('bun run build', {
       stdio: 'inherit',
-      shell: 'powershell.exe',
+      shell: isWindows ? 'powershell.exe' : undefined,
       cwd: process.cwd(),
     });
 

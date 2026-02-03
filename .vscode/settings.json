@@ -1,7 +1,6 @@
 {
   // Biome configuration
   "biome.enabled": true,
-  "biome.lspBin": "./node_modules/@biomejs/cli-win32-x64/biome.exe",
 
   // Editor settings
   "editor.formatOnSave": true,

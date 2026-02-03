@@ -6,6 +6,15 @@ interface ToastPositionSectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * ToastPositionSection - Configure toast screen position
+ *
+ * Provides visual grid for selecting toast notification position
+ * (top-left, top-right, bottom-left, bottom-right).
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function ToastPositionSection({ settings, onSave }: ToastPositionSectionProps) {
   const handlePositionChange = (position: ToastPosition) => {
     onSave({

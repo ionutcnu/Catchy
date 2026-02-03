@@ -12,6 +12,23 @@ interface SliderControlProps {
   'data-testid'?: string;
 }
 
+/**
+ * SliderControl - Range slider with label and value display
+ *
+ * Simple range slider component with optional custom value display
+ * and helper text. Used for numeric settings that benefit from
+ * visual slider interface.
+ *
+ * @param label - Display label for the slider
+ * @param value - Current numeric value
+ * @param min - Minimum slider value
+ * @param max - Maximum slider value
+ * @param step - Increment step (default: 1)
+ * @param onChange - Callback when value changes
+ * @param displayValue - Optional custom value display string
+ * @param helperText - Optional explanatory text
+ * @param data-testid - Optional test identifier
+ */
 export function SliderControl({
   label,
   value,

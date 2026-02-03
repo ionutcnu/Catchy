@@ -8,6 +8,15 @@ interface HistorySectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * HistorySection - Configure error history settings
+ *
+ * Controls max history size and keyboard shortcut for opening
+ * the error drawer. Validates history size within 5-50 range.
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function HistorySection({ settings, onSave }: HistorySectionProps) {
   return (
     <Card className="settings-card">

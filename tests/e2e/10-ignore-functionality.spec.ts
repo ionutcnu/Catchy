@@ -24,7 +24,7 @@ test.describe('Ignore Functionality', () => {
 
     // Navigate to test page
     await page.goto(TEST_URL);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     // Trigger same error 3 times
     await page.evaluate(() => console.error('Repeated error'));
@@ -67,7 +67,7 @@ test.describe('Ignore Functionality', () => {
     await settings.close();
 
     await page.goto(TEST_URL);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     // Trigger error 3 times to show ignore button
     for (let i = 0; i < 3; i++) {
@@ -106,7 +106,7 @@ test.describe('Ignore Functionality', () => {
     await settings.close();
 
     await page.goto(TEST_URL);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     // Trigger error 3 times to show ignore button
     for (let i = 0; i < 3; i++) {
@@ -163,7 +163,7 @@ test.describe('Ignore Functionality', () => {
     await settings.close();
 
     await page.goto(TEST_URL);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     // Trigger error 3 times to show ignore button
     for (let i = 0; i < 3; i++) {
@@ -222,7 +222,7 @@ test.describe('Ignore Functionality', () => {
     await settings.close();
 
     await page.goto(TEST_URL);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     // Trigger Error A 3 times
     for (let i = 0; i < 3; i++) {
@@ -277,7 +277,7 @@ test.describe('Ignore Functionality', () => {
     await settings.close();
 
     await page.goto(TEST_URL);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     // First occurrence - no counter
     await page.evaluate(() => console.error('Counter test'));
@@ -318,7 +318,7 @@ test.describe('Ignore Functionality', () => {
     await settings.close();
 
     await page.goto(TEST_URL);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     // Trigger error 3 times
     for (let i = 0; i < 3; i++) {

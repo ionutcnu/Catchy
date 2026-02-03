@@ -126,8 +126,6 @@ export class ToastManager {
         --catchy-bg-console: #ff4444;
         --catchy-bg-uncaught: #ff6b35;
         --catchy-bg-rejection: #f7931e;
-        --catchy-bg-resource: #fbb034;
-        --catchy-bg-network: #c1292e;
 
         --catchy-text: #ffffff;
         --catchy-text-secondary: rgba(255, 255, 255, 0.8);

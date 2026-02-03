@@ -5,6 +5,17 @@ interface ColorPickerProps {
   'data-testid'?: string;
 }
 
+/**
+ * ColorPicker - Visual color input component with preview swatch
+ *
+ * Displays current color value in hex format and provides native
+ * color picker input for selection. Used for customizing toast colors.
+ *
+ * @param label - Display label for the color setting
+ * @param value - Current hex color value (e.g., "#dc2626")
+ * @param onChange - Callback when color changes, receives new hex value
+ * @param data-testid - Optional test identifier
+ */
 export function ColorPicker({
   label,
   value,

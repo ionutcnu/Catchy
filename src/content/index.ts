@@ -77,7 +77,7 @@ const DEFAULT_SETTINGS: CatchySettings = {
     toastSize: 'medium',
     customWidth: 400,
     customHeight: 100,
-    maxHistorySize: 200,
+    maxHistorySize: 25,
     drawerShortcut: 'Alt+E',
     backgroundColor: '#dc2626',
     textColor: '#ffffff',
@@ -111,6 +111,12 @@ let enabledErrorTypes = {
 };
 let drawerShortcut = '`'; // Default keyboard shortcut for opening drawer (backtick)
 // let ignoreButtonThreshold = 3; // Show ignore button after X error occurrences (unused)
+
+/**
+ * Extension initialization state
+ * Prevents processing errors before permanent ignores are loaded
+ */
+let isInitialized = false;
 
 /**
  * Error ignore tracking (2 scopes: session, permanent)
@@ -567,6 +573,12 @@ window.addEventListener('message', (event) => {
 
   // Handle the error
   if (event.data.type === 'ERROR_CAPTURED') {
+    // Check 0: Wait for initialization (prevents race condition with permanent ignores loading)
+    if (!isInitialized) {
+      console.log('[Catchy Content] Extension still initializing, skipping error');
+      return;
+    }
+
     // Check 1: Is extension enabled for current site? (combines global + per-site logic)
     if (!isEnabledForCurrentSite) {
       console.log('[Catchy Content] Disabled for', window.location.hostname, ', ignoring error');
@@ -876,17 +888,26 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 /**
  * Initialize extension when DOM is ready
+ *
+ * CRITICAL SEQUENCE:
+ * 1. Load settings (for toast position)
+ * 2. Load permanent ignores (prevent race condition)
+ * 3. Initialize ToastManager
+ * 4. Set isInitialized flag (allows error processing)
  */
 async function initializeExtension() {
   // CRITICAL: Load settings FIRST before initializing ToastManager
   // This ensures the position is set before the container is created
   await loadSettings();
 
-  // Load permanent ignore list
+  // Load permanent ignore list BEFORE allowing error processing
   await loadPermanentIgnores();
 
   // Initialize ToastManager with Shadow DOM (will use the position from settings)
   toastManager.initialize();
+
+  // Mark as initialized - now safe to process errors from inject script
+  isInitialized = true;
 
   // Set up ignore callback for toasts
   toastManager.setOnIgnore((_toastId, signature, scope) => {

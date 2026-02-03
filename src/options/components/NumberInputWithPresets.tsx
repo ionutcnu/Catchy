@@ -14,6 +14,24 @@ interface NumberInputWithPresetsProps {
   warningText?: string;
 }
 
+/**
+ * NumberInputWithPresets - Numeric input with preset quick-select buttons
+ *
+ * Provides text input for numbers with optional preset buttons for
+ * common values. Validates input within min/max range and supports
+ * unit suffixes and warning messages.
+ *
+ * @param label - Display label for the input
+ * @param value - Current numeric value
+ * @param min - Minimum allowed value
+ * @param max - Maximum allowed value
+ * @param step - Increment step (default: 1)
+ * @param onChange - Callback when value changes
+ * @param unit - Optional unit suffix (e.g., "px", "ms")
+ * @param presets - Optional preset values for quick selection
+ * @param helperText - Optional explanatory text
+ * @param warningText - Optional warning message
+ */
 export function NumberInputWithPresets({
   label,
   value,

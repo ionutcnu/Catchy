@@ -7,6 +7,15 @@ interface GlobalControlSectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * GlobalControlSection - Master toggle for enabling/disabling extension
+ *
+ * Primary control for activating or deactivating Catchy across all websites.
+ * When disabled, no error notifications will be shown regardless of per-site settings.
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function GlobalControlSection({ settings, onSave }: GlobalControlSectionProps) {
   return (
     <Card className="settings-card">

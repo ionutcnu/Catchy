@@ -29,7 +29,7 @@ test.describe('Error History Drawer', () => {
     // Navigate to test page
     await page.goto(TEST_URL);
     expect(await ext.isLoaded()).toBe(true);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     // Verify drawer starts closed
     expect(await ext.isDrawerOpen()).toBe(false);

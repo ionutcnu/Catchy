@@ -10,6 +10,16 @@ interface VisualCustomizationSectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * VisualCustomizationSection - Customize toast appearance
+ *
+ * Provides per-error-type color customization, border radius,
+ * shadow toggle, spacing controls, and reset to defaults.
+ * Organizes color pickers in accordion UI.
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function VisualCustomizationSection({ settings, onSave }: VisualCustomizationSectionProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>('console');
 

@@ -31,6 +31,7 @@ test.describe('User Workflow: Global & Per-Site Controls', () => {
     // STEP 2: Go to minimal.html, trigger error, validate toast appears
     // =====================================
     await page.goto(minimalUrl);
+    await page.waitForTimeout(300); // Wait for extension initialization
     expect(await ext.isLoaded()).toBe(true);
 
     await page.evaluate(() => console.error('Test error 1: Global ON'));

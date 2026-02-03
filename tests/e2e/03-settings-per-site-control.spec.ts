@@ -47,7 +47,7 @@ test.describe('Settings Page: Per-Site Control', () => {
       // Navigate to lonut.dev and trigger error → NO toast
       await page.goto(LONUT_DEV);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Settings Global ON, lonut.dev disabled'));
 
@@ -82,7 +82,7 @@ test.describe('Settings Page: Per-Site Control', () => {
       // Navigate to lonut.dev/about → Should also have NO toast (same hostname)
       await page.goto(LONUT_ABOUT);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Settings Global ON, lonut.dev disabled, about page'));
 
@@ -117,7 +117,7 @@ test.describe('Settings Page: Per-Site Control', () => {
       // Navigate to lonut.dev → Should SHOW toast
       await page.goto(LONUT_DEV);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Settings Global ON, lonut.dev enabled'));
 
@@ -153,7 +153,7 @@ test.describe('Settings Page: Per-Site Control', () => {
       // Navigate to lonut.dev/about → Should SHOW toast (same hostname)
       await page.goto(LONUT_ABOUT);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Settings Global ON, lonut.dev enabled, about page'));
 
@@ -193,7 +193,7 @@ test.describe('Settings Page: Per-Site Control', () => {
       // Navigate to lonut.dev → NO toast
       await page.goto(LONUT_DEV);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Settings Global OFF, lonut.dev disabled'));
 
@@ -230,7 +230,7 @@ test.describe('Settings Page: Per-Site Control', () => {
       // Navigate to lonut.dev → SHOW toast
       await page.goto(LONUT_DEV);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Settings Global OFF, lonut.dev enabled'));
 
@@ -268,7 +268,7 @@ test.describe('Settings Page: Per-Site Control', () => {
       // Navigate to lonut.dev/about → SHOW toast
       await page.goto(LONUT_ABOUT);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Settings Global OFF, lonut.dev enabled, about page'));
 
@@ -306,7 +306,7 @@ test.describe('Settings Page: Per-Site Control', () => {
       // Navigate to lonut.dev/about → NO toast
       await page.goto(LONUT_ABOUT);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Settings Global OFF, lonut.dev disabled, about page'));
 

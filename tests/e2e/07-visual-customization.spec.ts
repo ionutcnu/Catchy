@@ -34,7 +34,7 @@ test.describe('Visual Customization', () => {
     // Trigger console.error and verify green background
     await page.goto(TEST_URL);
     expect(await ext.isLoaded()).toBe(true);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     await page.evaluate(() => console.error('Custom color test'));
     expect(await ext.waitForToast(3000)).toBe(true);

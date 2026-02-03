@@ -14,6 +14,23 @@ interface HybridSliderInputProps {
   testId?: string;
 }
 
+/**
+ * HybridSliderInput - Slider with text input and optional preset buttons
+ *
+ * Combines range slider, numeric text input, and preset quick-select buttons
+ * for numeric settings. Validates input within min/max range.
+ *
+ * @param label - Display label for the input
+ * @param value - Current numeric value
+ * @param min - Minimum allowed value
+ * @param max - Maximum allowed value
+ * @param step - Increment step (default: 1)
+ * @param onChange - Callback when value changes
+ * @param unit - Optional unit suffix (e.g., "px", "ms")
+ * @param presets - Optional preset values with labels
+ * @param helperText - Optional explanatory text
+ * @param testId - Optional test identifier
+ */
 export function HybridSliderInput({
   label,
   value,

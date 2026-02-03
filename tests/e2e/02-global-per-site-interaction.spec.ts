@@ -12,9 +12,8 @@ import { ExtensionPage } from '../page-objects/ExtensionPage';
 
 test.describe('Global + Per-Site Interaction', () => {
   const LONUT_DEV = 'https://lonut.dev/';
-  const EXAMPLE_COM = 'https://example.com/';
+  const LONUT_ABOUT = 'https://lonut.dev/about';
   const LONUT_HOSTNAME = 'lonut.dev';
-  const EXAMPLE_HOSTNAME = 'example.com';
 
   test.describe('Global Mode ON', () => {
     test('Scenario 1: Current site disabled → NO toast (lonut.dev)', async ({
@@ -59,9 +58,9 @@ test.describe('Global + Per-Site Interaction', () => {
       const popup = new PopupPage(context, extensionId);
       const ext = new ExtensionPage(page);
 
-      // Navigate to example.com and disable it
-      await page.goto(EXAMPLE_COM);
-      await popup.open(EXAMPLE_HOSTNAME);
+      // Navigate to lonut.dev/about and disable it
+      await page.goto(LONUT_ABOUT);
+      await popup.open(LONUT_HOSTNAME);
 
       if (!(await popup.isGlobalModeEnabled())) {
         await popup.toggleGlobalMode();
@@ -83,16 +82,16 @@ test.describe('Global + Per-Site Interaction', () => {
       expect(await popup.isSiteEnabled()).toBe(true);
       await popup.close();
 
-      // Trigger error on lonut.dev → Should SHOW toast (example.com disabled, but lonut.dev enabled)
+      // Trigger error on lonut.dev → Should SHOW toast (lonut.dev/about disabled, but lonut.dev enabled)
       await page.goto(LONUT_DEV);
-      await page.evaluate(() => console.error('Test: Global ON, example.com disabled, lonut.dev enabled'));
+      await page.evaluate(() => console.error('Test: Global ON, lonut.dev/about disabled, lonut.dev enabled'));
 
       expect(await ext.waitForToast(3000)).toBe(true);
       const message = await ext.getToastMessage();
-      expect(message).toContain('Test: Global ON, example.com disabled, lonut.dev enabled');
+      expect(message).toContain('Test: Global ON, lonut.dev/about disabled, lonut.dev enabled');
     });
 
-    test('Scenario 3: Current site enabled → SHOW toast (example.com)', async ({
+    test('Scenario 3: Current site enabled → SHOW toast (lonut.dev/about)', async ({
       page,
       context,
       extensionId,
@@ -100,12 +99,12 @@ test.describe('Global + Per-Site Interaction', () => {
       const popup = new PopupPage(context, extensionId);
       const ext = new ExtensionPage(page);
 
-      // Navigate to example.com
-      await page.goto(EXAMPLE_COM);
+      // Navigate to lonut.dev/about
+      await page.goto(LONUT_ABOUT);
       expect(await ext.isLoaded()).toBe(true);
 
       // Ensure global mode ON and site enabled
-      await popup.open(EXAMPLE_HOSTNAME);
+      await popup.open(LONUT_HOSTNAME);
       if (!(await popup.isGlobalModeEnabled())) {
         await popup.toggleGlobalMode();
       }
@@ -116,19 +115,19 @@ test.describe('Global + Per-Site Interaction', () => {
       expect(await popup.isSiteEnabled()).toBe(true);
       await popup.close();
 
-      // Trigger error on example.com → Should SHOW toast
-      await page.goto(EXAMPLE_COM);
+      // Trigger error on lonut.dev/about → Should SHOW toast
+      await page.goto(LONUT_ABOUT);
       expect(await ext.isLoaded()).toBe(true); // Verify extension loaded
-      await page.waitForTimeout(500); // Wait for content script to fully initialize
+      await page.waitForTimeout(300); // Wait for extension initialization
 
-      await page.evaluate(() => console.error('Test: Global ON, example.com enabled'));
+      await page.evaluate(() => console.error('Test: Global ON, lonut.dev/about enabled'));
 
       expect(await ext.waitForToast(3000)).toBe(true);
       const message = await ext.getToastMessage();
-      expect(message).toContain('Test: Global ON, example.com enabled');
+      expect(message).toContain('Test: Global ON, lonut.dev/about enabled');
     });
 
-    test('Scenario 4: Current site disabled → NO toast (example.com)', async ({
+    test('Scenario 4: Current site disabled → NO toast (lonut.dev/about)', async ({
       page,
       context,
       extensionId,
@@ -136,11 +135,11 @@ test.describe('Global + Per-Site Interaction', () => {
       const popup = new PopupPage(context, extensionId);
       const ext = new ExtensionPage(page);
 
-      // Navigate to example.com
-      await page.goto(EXAMPLE_COM);
+      // Navigate to lonut.dev/about
+      await page.goto(LONUT_ABOUT);
 
-      // Ensure global mode ON, disable example.com
-      await popup.open(EXAMPLE_HOSTNAME);
+      // Ensure global mode ON, disable lonut.dev/about
+      await popup.open(LONUT_HOSTNAME);
       if (!(await popup.isGlobalModeEnabled())) {
         await popup.toggleGlobalMode();
       }
@@ -151,9 +150,9 @@ test.describe('Global + Per-Site Interaction', () => {
       expect(await popup.isSiteEnabled()).toBe(false);
       await popup.close();
 
-      // Trigger error on example.com → Should NOT show toast
-      await page.goto(EXAMPLE_COM);
-      await page.evaluate(() => console.error('Test: Global ON, example.com disabled'));
+      // Trigger error on lonut.dev/about → Should NOT show toast
+      await page.goto(LONUT_ABOUT);
+      await page.evaluate(() => console.error('Test: Global ON, lonut.dev/about disabled'));
 
       expect(await ext.waitForNoToast(2000)).toBe(true);
       expect(await ext.hasToast()).toBe(false);
@@ -228,7 +227,7 @@ test.describe('Global + Per-Site Interaction', () => {
       expect(message).toContain('Test: Global OFF, lonut.dev enabled');
     });
 
-    test('Scenario 7: Global OFF, current site enabled → SHOW toast (example.com)', async ({
+    test('Scenario 7: Global OFF, current site enabled → SHOW toast (lonut.dev/about)', async ({
       page,
       context,
       extensionId,
@@ -236,17 +235,17 @@ test.describe('Global + Per-Site Interaction', () => {
       const popup = new PopupPage(context, extensionId);
       const ext = new ExtensionPage(page);
 
-      // Navigate to example.com
-      await page.goto(EXAMPLE_COM);
+      // Navigate to lonut.dev/about
+      await page.goto(LONUT_ABOUT);
 
       // Disable global mode
-      await popup.open(EXAMPLE_HOSTNAME);
+      await popup.open(LONUT_HOSTNAME);
       if (await popup.isGlobalModeEnabled()) {
         await popup.toggleGlobalMode();
       }
       expect(await popup.isGlobalModeEnabled()).toBe(false);
 
-      // Enable example.com specifically
+      // Enable lonut.dev/about specifically
       if (!(await popup.isSiteEnabled())) {
         await popup.toggleSite();
       }
@@ -254,18 +253,17 @@ test.describe('Global + Per-Site Interaction', () => {
       await popup.close();
 
       // Trigger error → Should SHOW toast
-      await page.goto(EXAMPLE_COM);
+      await page.goto(LONUT_ABOUT);
       expect(await ext.isLoaded()).toBe(true); // Verify extension loaded
-      await page.waitForTimeout(500); // Wait for content script to fully initialize
 
-      await page.evaluate(() => console.error('Test: Global OFF, example.com enabled'));
+      await page.evaluate(() => console.error('Test: Global OFF, lonut.dev/about enabled'));
 
       expect(await ext.waitForToast(3000)).toBe(true);
       const message = await ext.getToastMessage();
-      expect(message).toContain('Test: Global OFF, example.com enabled');
+      expect(message).toContain('Test: Global OFF, lonut.dev/about enabled');
     });
 
-    test('Scenario 8: Global OFF, current site disabled → NO toast (example.com)', async ({
+    test('Scenario 8: Global OFF, current site disabled → NO toast (lonut.dev/about)', async ({
       page,
       context,
       extensionId,
@@ -273,17 +271,17 @@ test.describe('Global + Per-Site Interaction', () => {
       const popup = new PopupPage(context, extensionId);
       const ext = new ExtensionPage(page);
 
-      // Navigate to example.com
-      await page.goto(EXAMPLE_COM);
+      // Navigate to lonut.dev/about
+      await page.goto(LONUT_ABOUT);
 
       // Disable global mode
-      await popup.open(EXAMPLE_HOSTNAME);
+      await popup.open(LONUT_HOSTNAME);
       if (await popup.isGlobalModeEnabled()) {
         await popup.toggleGlobalMode();
       }
       expect(await popup.isGlobalModeEnabled()).toBe(false);
 
-      // Disable example.com
+      // Disable lonut.dev/about
       if (await popup.isSiteEnabled()) {
         await popup.toggleSite();
       }
@@ -291,8 +289,8 @@ test.describe('Global + Per-Site Interaction', () => {
       await popup.close();
 
       // Trigger error → Should NOT show toast
-      await page.goto(EXAMPLE_COM);
-      await page.evaluate(() => console.error('Test: Global OFF, example.com disabled'));
+      await page.goto(LONUT_ABOUT);
+      await page.evaluate(() => console.error('Test: Global OFF, lonut.dev/about disabled'));
 
       expect(await ext.waitForNoToast(2000)).toBe(true);
       expect(await ext.hasToast()).toBe(false);

@@ -8,6 +8,16 @@ interface PerSiteSectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * PerSiteSection - Manage per-site enable/disable overrides
+ *
+ * Allows users to add websites and toggle extension functionality
+ * independently for each site. Normalizes hostnames and provides
+ * visual feedback for site-specific settings.
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
   const [newSiteHostname, setNewSiteHostname] = useState('');
 

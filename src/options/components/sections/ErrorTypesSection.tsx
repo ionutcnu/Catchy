@@ -6,6 +6,16 @@ interface ErrorTypesSectionProps {
   onSave: (settings: CatchySettings) => void;
 }
 
+/**
+ * ErrorTypesSection - Configure which error types to capture
+ *
+ * Allows users to enable/disable specific error categories:
+ * console errors, uncaught exceptions, unhandled rejections,
+ * resource errors, and network errors.
+ *
+ * @param settings - Current extension settings
+ * @param onSave - Callback to persist settings changes
+ */
 export function ErrorTypesSection({ settings, onSave }: ErrorTypesSectionProps) {
   const handleErrorTypeToggle = (errorType: keyof CatchySettings['errorTypes']) => {
     onSave({

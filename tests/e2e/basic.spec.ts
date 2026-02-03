@@ -18,7 +18,8 @@ const test = base.extend({
       ],
     });
 
-    await context.pages()[0].waitForTimeout(2000);
+    // Wait for extension to be ready before using context
+    await context.pages()[0].waitForLoadState('domcontentloaded');
     await use(context);
     await context.close();
   },
@@ -33,7 +34,8 @@ test.describe('Basic Extension Test', () => {
 
     console.log('📄 Page loaded');
 
-    await page.waitForTimeout(3000);
+    // Wait for extension to inject shadow host
+    await page.waitForSelector('#catchy-toast-host', { timeout: 5000 });
 
     const injected = await page.evaluate(() => {
       return !!document.querySelector('#catchy-toast-host');

@@ -34,7 +34,7 @@ test.describe('Error Types', () => {
     // Trigger console.error - should NOT show toast
     await page.goto(TEST_URL);
     expect(await ext.isLoaded()).toBe(true);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Wait for extension initialization
 
     await page.evaluate(() => console.error('Test console error'));
     await page.waitForTimeout(1000);

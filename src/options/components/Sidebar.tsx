@@ -10,6 +10,10 @@ interface NavGroup {
   items: { id: SectionId; label: string }[];
 }
 
+/**
+ * Navigation groups configuration for settings sidebar
+ * Organizes sections into Behavior, Visual, Data, and About categories
+ */
 const navGroups: NavGroup[] = [
   {
     title: 'Behavior',
@@ -40,6 +44,15 @@ const navGroups: NavGroup[] = [
   },
 ];
 
+/**
+ * Sidebar - Navigation panel for settings page
+ *
+ * Displays grouped navigation links for all settings sections.
+ * Highlights active section and handles section changes.
+ *
+ * @param activeSection - Currently active section ID
+ * @param onSectionChange - Callback when user selects different section
+ */
 export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
   return (
     <aside className="sidebar">

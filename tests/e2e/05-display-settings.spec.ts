@@ -38,7 +38,7 @@ test.describe('Display Settings', () => {
       // Navigate to test page
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       // Trigger errors with delays
       await page.evaluate(() => console.error('Error 1'));
@@ -79,7 +79,7 @@ test.describe('Display Settings', () => {
       // Navigate and trigger 5 errors
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       // Trigger errors with delays
       await page.evaluate(() => console.error('Error 1'));
@@ -124,7 +124,7 @@ test.describe('Display Settings', () => {
       // Navigate and trigger 7 errors (more than max)
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       // Trigger errors with delays
       await page.evaluate(() => console.error('Error 1'));
@@ -167,7 +167,7 @@ test.describe('Display Settings', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Auto-close Never'));
 
@@ -200,7 +200,7 @@ test.describe('Display Settings', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Auto-close 5s'));
 
@@ -232,7 +232,7 @@ test.describe('Display Settings', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Auto-close 10s'));
 
@@ -266,7 +266,7 @@ test.describe('Display Settings', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Small size'));
 
@@ -295,7 +295,7 @@ test.describe('Display Settings', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Medium size'));
 
@@ -324,7 +324,7 @@ test.describe('Display Settings', () => {
       // Navigate and trigger error
       await page.goto(TEST_URL);
       expect(await ext.isLoaded()).toBe(true);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300); // Wait for extension initialization
 
       await page.evaluate(() => console.error('Test: Large size'));
 
