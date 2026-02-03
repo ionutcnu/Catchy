@@ -109,7 +109,7 @@ let enabledErrorTypes = {
   resource: false,
   network: false,
 };
-let drawerShortcut = '`'; // Default keyboard shortcut for opening drawer (backtick)
+let drawerShortcut = DEFAULT_SETTINGS.theme.drawerShortcut; // Default keyboard shortcut for opening drawer
 // let ignoreButtonThreshold = 3; // Show ignore button after X error occurrences (unused)
 
 /**
@@ -343,6 +343,7 @@ async function loadSettings() {
     const settings = result.settings || DEFAULT_SETTINGS;
 
     // Migrate old backgroundColor/textColor to new structure
+    let needsMigration = false;
     if (settings.theme?.backgroundColor && !settings.theme?.backgroundColors) {
       const oldBg = settings.theme.backgroundColor;
       settings.theme.backgroundColors = {
@@ -353,6 +354,7 @@ async function loadSettings() {
         network: oldBg,
       };
       delete settings.theme.backgroundColor;
+      needsMigration = true;
       console.log('[Catchy Content] Migrated old backgroundColor to backgroundColors');
     }
     if (settings.theme?.textColor && !settings.theme?.textColors) {
@@ -365,7 +367,19 @@ async function loadSettings() {
         network: oldText,
       };
       delete settings.theme.textColor;
+      needsMigration = true;
       console.log('[Catchy Content] Migrated old textColor to textColors');
+    }
+
+    // Persist migration changes to storage
+    if (needsMigration) {
+      chrome.storage.sync.set({ settings }, () => {
+        if (chrome.runtime.lastError) {
+          console.error('[Catchy Content] Failed to persist migration:', chrome.runtime.lastError);
+        } else {
+          console.log('[Catchy Content] Migration persisted to storage');
+        }
+      });
     }
 
     // Update global enabled state
@@ -622,42 +636,32 @@ function handleErrorIgnore(signature: string, scope: 'session' | 'permanent'): v
       console.log('[Catchy Content] Total session ignores:', sessionIgnoreList.size);
     }
   } else if (scope === 'permanent') {
-    // Add to permanent ignore list (chrome.storage.local)
-    chrome.storage.local.get(['ignoredErrorSignatures'], (result) => {
-      if (chrome.runtime.lastError) {
-        console.error(
-          '[Catchy Content] Failed to load permanent ignores:',
-          chrome.runtime.lastError
-        );
-        return;
-      }
+    // Add to in-memory permanent ignore list and persist to storage
+    if (!permanentIgnoreList.has(signature)) {
+      permanentIgnoreList.add(signature);
 
-      const ignoreList: string[] = result.ignoredErrorSignatures || [];
-      if (!ignoreList.includes(signature)) {
-        ignoreList.push(signature);
-
-        chrome.storage.local.set({ ignoredErrorSignatures: ignoreList }, () => {
-          if (chrome.runtime.lastError) {
-            console.error(
-              '[Catchy Content] Failed to save permanent ignore:',
-              chrome.runtime.lastError
-            );
-            return;
-          }
-
-          // Update in-memory cache
-          permanentIgnoreList.add(signature);
-          console.log(
-            '[Catchy Content] ✓ Added to permanent ignore list. Total:',
-            ignoreList.length
+      // Persist in-memory list to storage
+      chrome.storage.local.set({ ignoredErrorSignatures: Array.from(permanentIgnoreList) }, () => {
+        if (chrome.runtime.lastError) {
+          console.error(
+            '[Catchy Content] Failed to save permanent ignore:',
+            chrome.runtime.lastError
           );
-        });
-      } else {
-        if (import.meta.env.DEV) {
-          console.log('[Catchy Content] Signature already in permanent ignore list');
+          // Rollback on error
+          permanentIgnoreList.delete(signature);
+          return;
         }
+
+        console.log(
+          '[Catchy Content] ✓ Added to permanent ignore list. Total:',
+          permanentIgnoreList.size
+        );
+      });
+    } else {
+      if (import.meta.env.DEV) {
+        console.log('[Catchy Content] Signature already in permanent ignore list');
       }
-    });
+    }
   }
 }
 

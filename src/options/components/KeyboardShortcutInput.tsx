@@ -123,9 +123,16 @@ export function KeyboardShortcutInput({
         hasMainKey = true;
       }
 
-      // Must have at least one key (can be single key OR modifier+key)
+      // Must have at least one key
       if (!hasMainKey) {
         setConflict('Please press a valid key');
+        return;
+      }
+
+      // Require at least one modifier for single letters/numbers to avoid conflicts
+      const isSingleChar = mainKey.length === 1 && /[a-zA-Z0-9]/.test(mainKey);
+      if (isSingleChar && modifiers.length === 0) {
+        setConflict('Single letters/numbers require a modifier (Ctrl, Alt, Shift, or Cmd)');
         return;
       }
 

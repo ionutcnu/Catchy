@@ -20,7 +20,8 @@ export class SettingsPage {
     const url = `chrome-extension://${this.extensionId}/options/index.html`;
     await this.page.goto(url);
     await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForTimeout(800); // Wait for React to mount and load settings
+    // Wait for React to mount by checking sidebar is visible
+    await this.page.locator('[data-testid="nav-global"]').waitFor({ state: 'visible', timeout: 3000 });
   }
 
   /**
@@ -46,7 +47,8 @@ export class SettingsPage {
   async navigateToSection(section: 'global' | 'persite' | 'display' | 'position' | 'errors' | 'history' | 'ignored' | 'visual' | 'about'): Promise<void> {
     const page = this.getPage();
     await page.locator(`[data-testid="nav-${section}"]`).click();
-    await page.waitForTimeout(500); // Wait for section to render
+    // Wait for section content to be visible (reduced from 500ms)
+    await page.waitForTimeout(200);
   }
 
   /**

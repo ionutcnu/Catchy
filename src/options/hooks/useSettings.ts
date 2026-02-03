@@ -30,6 +30,15 @@ export function useSettings() {
           theme: {
             ...DEFAULT_SETTINGS.theme,
             ...result.settings.theme,
+            // Merge nested color objects explicitly
+            backgroundColors: {
+              ...DEFAULT_SETTINGS.theme.backgroundColors,
+              ...result.settings.theme?.backgroundColors,
+            },
+            textColors: {
+              ...DEFAULT_SETTINGS.theme.textColors,
+              ...result.settings.theme?.textColors,
+            },
           },
           errorTypes: {
             ...DEFAULT_SETTINGS.errorTypes,
@@ -89,11 +98,18 @@ export function useSettings() {
    */
   const saveSettings = (newSettings: CatchySettings) => {
     // Validate maxHistorySize before saving (clamp to 5-50 range)
+    // Use defensive merge to preserve nested color objects
     const validatedSettings: CatchySettings = {
       ...newSettings,
       theme: {
         ...newSettings.theme,
         maxHistorySize: Math.max(5, Math.min(50, newSettings.theme.maxHistorySize)),
+        backgroundColors: {
+          ...newSettings.theme.backgroundColors,
+        },
+        textColors: {
+          ...newSettings.theme.textColors,
+        },
       },
     };
 
@@ -133,6 +149,7 @@ export function useSettings() {
    * Changes are broadcast to all extension contexts via storage listener.
    */
   const toggleDarkMode = () => {
+    const previousDarkMode = isDarkMode;
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
 
@@ -143,13 +160,21 @@ export function useSettings() {
       document.documentElement.classList.remove('dark');
     }
 
-    // Save to chrome storage
+    // Save to chrome storage with rollback on failure
     chrome.storage.sync.set({ darkMode: newDarkMode }, () => {
       if (chrome.runtime.lastError) {
         console.error(
           '[Catchy Options] Failed to save dark mode preference:',
           chrome.runtime.lastError
         );
+
+        // Rollback state and DOM class on error
+        setIsDarkMode(previousDarkMode);
+        if (previousDarkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       }
     });
   };

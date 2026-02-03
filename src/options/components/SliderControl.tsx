@@ -9,6 +9,7 @@ interface SliderControlProps {
   onChange: (value: number) => void;
   displayValue?: string;
   helperText?: string;
+  /** Test identifier for automated testing */
   'data-testid'?: string;
 }
 

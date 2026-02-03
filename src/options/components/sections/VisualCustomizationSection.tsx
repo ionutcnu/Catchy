@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CatchySettings } from '@/types';
 import { DEFAULT_SETTINGS, getAutoTextColor } from '@/types';
@@ -22,27 +22,49 @@ interface VisualCustomizationSectionProps {
  */
 export function VisualCustomizationSection({ settings, onSave }: VisualCustomizationSectionProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>('console');
+  const [pendingSettings, setPendingSettings] = useState<CatchySettings | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce color changes to avoid excessive saves
+  useEffect(() => {
+    if (pendingSettings) {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      debounceTimerRef.current = setTimeout(() => {
+        onSave(pendingSettings);
+        setPendingSettings(null);
+      }, 300);
+    }
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [pendingSettings, onSave]);
 
   const errorTypes = [
     {
-      key: 'console',
+      key: 'console' as const,
       label: 'Console Errors',
       description: 'console.error() messages',
-      defaultBg: '#dc2626',
+      defaultBg: DEFAULT_SETTINGS.theme.backgroundColors.console,
     },
     {
-      key: 'uncaught',
+      key: 'uncaught' as const,
       label: 'Uncaught Exceptions',
       description: 'Unhandled JavaScript errors',
-      defaultBg: '#ea580c',
+      defaultBg: DEFAULT_SETTINGS.theme.backgroundColors.uncaught,
     },
     {
-      key: 'rejection',
+      key: 'rejection' as const,
       label: 'Promise Rejections',
       description: 'Unhandled promise rejections',
-      defaultBg: '#f59e0b',
+      defaultBg: DEFAULT_SETTINGS.theme.backgroundColors.rejection,
     },
-  ] as const;
+  ];
 
   return (
     <Card className="settings-card">
@@ -102,8 +124,7 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      role="img"
-                      aria-label={isOpen ? 'Collapse' : 'Expand'}
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -132,7 +153,8 @@ export function VisualCustomizationSection({ settings, onSave }: VisualCustomiza
                             [errorType.key]: autoText,
                           };
 
-                          onSave({
+                          // Use pending settings for debounced save
+                          setPendingSettings({
                             ...settings,
                             theme: {
                               ...settings.theme,

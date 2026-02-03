@@ -10,8 +10,7 @@ interface ErrorTypesSectionProps {
  * ErrorTypesSection - Configure which error types to capture
  *
  * Allows users to enable/disable specific error categories:
- * console errors, uncaught exceptions, unhandled rejections,
- * resource errors, and network errors.
+ * console errors, uncaught exceptions, and unhandled promise rejections.
  *
  * @param settings - Current extension settings
  * @param onSave - Callback to persist settings changes

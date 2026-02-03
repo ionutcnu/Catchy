@@ -11,11 +11,22 @@ async function globalSetup() {
   console.log('[Global Setup] Starting...');
 
   const distPath = path.resolve(process.cwd(), 'dist');
-  const manifestPath = path.join(distPath, 'manifest.json');
 
-  // Check if extension is already built
-  if (fs.existsSync(manifestPath)) {
-    console.log('[Global Setup] ✓ Extension already built (dist/manifest.json exists)');
+  // Required files that must exist after build
+  const requiredFiles = [
+    'manifest.json',
+    'background/index.js',
+    'content/index.js',
+    'content/inject.js',
+  ];
+
+  // Check if extension is already built (validate ALL required files)
+  const allFilesExist = requiredFiles.every(file =>
+    fs.existsSync(path.join(distPath, file))
+  );
+
+  if (allFilesExist) {
+    console.log('[Global Setup] ✓ Extension already built (all required files exist)');
     return;
   }
 
@@ -37,14 +48,7 @@ async function globalSetup() {
     throw new Error('Extension build failed. Run "bun run build" manually to debug.');
   }
 
-  // Validate build output
-  const requiredFiles = [
-    'manifest.json',
-    'background/index.js',
-    'content/index.js',
-    'content/inject.js',
-  ];
-
+  // Validate build output (check all required files)
   for (const file of requiredFiles) {
     const filePath = path.join(distPath, file);
     if (!fs.existsSync(filePath)) {

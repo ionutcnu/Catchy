@@ -177,8 +177,22 @@ export const DEFAULT_SETTINGS: CatchySettings = {
  * @returns '#000000' for light backgrounds, '#ffffff' for dark backgrounds
  */
 export function getAutoTextColor(bgColor: string): string {
-  // Remove # if present
-  const hex = bgColor.replace('#', '');
+  // Remove # if present and normalize
+  let hex = bgColor.replace('#', '').trim();
+
+  // Validate hex color format
+  if (!/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(hex)) {
+    console.warn(`[getAutoTextColor] Invalid hex color: ${bgColor}, defaulting to white text`);
+    return '#ffffff';
+  }
+
+  // Normalize 3-char hex to 6-char hex (e.g., "abc" -> "aabbcc")
+  if (hex.length === 3) {
+    hex = hex
+      .split('')
+      .map((char) => char + char)
+      .join('');
+  }
 
   // Parse RGB values
   const r = Number.parseInt(hex.substring(0, 2), 16) / 255;

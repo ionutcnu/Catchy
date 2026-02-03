@@ -60,7 +60,7 @@ try {
   }, { passed: 0, failed: 0, skipped: 0, timedOut: 0 });
 
   const total = stats.passed + stats.failed + stats.skipped + stats.timedOut;
-  const duration = (results.stats.duration / 1000).toFixed(1);
+  const duration = ((results?.stats?.duration ?? 0) / 1000).toFixed(1);
   const passRate = total > 0 ? ((stats.passed / total) * 100).toFixed(1) : '0.0';
 
   // Determine overall status

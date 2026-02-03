@@ -30,7 +30,14 @@ export const test = base.extend<ExtensionFixtures>({
   },
 
   extensionId: async ({ context }, use) => {
-    const workers = context.serviceWorkers();
+    // Wait for service worker to be available
+    let workers = context.serviceWorkers();
+
+    // If no workers yet, wait for the first one
+    if (workers.length === 0) {
+      await context.waitForEvent('serviceworker', { timeout: 10000 });
+      workers = context.serviceWorkers();
+    }
 
     if (workers.length > 0) {
       const url = workers[0].url();
@@ -41,7 +48,8 @@ export const test = base.extend<ExtensionFixtures>({
       }
     }
 
-    await use('extension-loaded');
+    // If we still can't extract the ID, throw an error instead of using invalid fallback
+    throw new Error('Failed to extract extension ID from service worker URL');
   },
 });
 
