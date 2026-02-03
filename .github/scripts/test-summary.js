@@ -50,12 +50,19 @@ try {
   // Calculate statistics from all tests (including nested suites)
   const allTests = collectTests(results.suites);
   const stats = allTests.reduce((acc, { test }) => {
-    // Use final outcome from retries, not first attempt
-    const status = test.outcome || test.results[test.results.length - 1]?.status || 'unknown';
-    if (status === 'passed' || status === 'expected') acc.passed++;
-    else if (status === 'failed' || status === 'unexpected' || status === 'flaky' || status === 'interrupted') acc.failed++;
-    else if (status === 'skipped') acc.skipped++;
-    else if (status === 'timedOut') acc.timedOut++;
+    // Prioritize timedOut detection from final result to avoid miscounting
+    const finalResult = test.results[test.results.length - 1];
+    const finalStatus = finalResult?.status;
+
+    if (finalStatus === 'timedOut') {
+      acc.timedOut++;
+    } else {
+      // Use final outcome from retries, not first attempt
+      const status = test.outcome || finalStatus || 'unknown';
+      if (status === 'passed' || status === 'expected') acc.passed++;
+      else if (status === 'failed' || status === 'unexpected' || status === 'flaky' || status === 'interrupted') acc.failed++;
+      else if (status === 'skipped') acc.skipped++;
+    }
     return acc;
   }, { passed: 0, failed: 0, skipped: 0, timedOut: 0 });
 
