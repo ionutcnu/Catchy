@@ -873,8 +873,14 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 
   // Watch for permanent ignore changes from other tabs (local storage)
   if (areaName === 'local' && changes.ignoredErrorSignatures) {
-    console.log('[Catchy Content] Permanent ignores changed in another tab, reloading...');
-    loadPermanentIgnores();
+    const newIgnoreList: string[] = changes.ignoredErrorSignatures.newValue || [];
+    console.log('[Catchy Content] Permanent ignores changed in another tab, updating...', newIgnoreList.length);
+
+    // Update in-memory set directly to avoid async race conditions
+    permanentIgnoreList.clear();
+    for (const signature of newIgnoreList) {
+      permanentIgnoreList.add(signature);
+    }
   }
 });
 

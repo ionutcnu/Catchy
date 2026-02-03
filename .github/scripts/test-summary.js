@@ -53,7 +53,7 @@ try {
     // Use final outcome from retries, not first attempt
     const status = test.outcome || test.results[test.results.length - 1]?.status || 'unknown';
     if (status === 'passed' || status === 'expected') acc.passed++;
-    else if (status === 'failed' || status === 'unexpected') acc.failed++;
+    else if (status === 'failed' || status === 'unexpected' || status === 'flaky' || status === 'interrupted') acc.failed++;
     else if (status === 'skipped') acc.skipped++;
     else if (status === 'timedOut') acc.timedOut++;
     return acc;
@@ -89,7 +89,7 @@ try {
       const finalOutcome = test.outcome || finalResult?.status;
 
       if (finalOutcome === 'failed' || finalOutcome === 'unexpected' ||
-          finalOutcome === 'timedOut') {
+          finalOutcome === 'timedOut' || finalOutcome === 'flaky' || finalOutcome === 'interrupted') {
         const title = spec.title;
         const file = spec.file.replace(process.cwd(), '').replace(/^[/\\]/, '').replace(/\\/g, '/');
         const error = finalResult?.error?.message || 'Unknown error';
