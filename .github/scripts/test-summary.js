@@ -21,6 +21,7 @@ const RESULTS_PATH = join(process.cwd(), 'test-results', 'results.json');
  */
 function collectTests(suites) {
   const tests = [];
+  if (!suites) return tests;
   for (const suite of suites) {
     // Collect specs from current suite
     if (suite.specs) {
@@ -51,7 +52,7 @@ try {
   const allTests = collectTests(results.suites);
   const stats = allTests.reduce((acc, { test }) => {
     // Prioritize timedOut detection from final result to avoid miscounting
-    const finalResult = test.results[test.results.length - 1];
+    const finalResult = test.results?.length ? test.results[test.results.length - 1] : undefined;
     const finalStatus = finalResult?.status;
 
     if (finalStatus === 'timedOut') {
@@ -92,7 +93,7 @@ try {
   if (stats.failed > 0 || stats.timedOut > 0) {
     console.log('### ❌ Failed Tests\n');
     allTests.forEach(({ spec, test }) => {
-      const finalResult = test.results[test.results.length - 1];
+      const finalResult = test.results?.length ? test.results[test.results.length - 1] : undefined;
       const finalOutcome = test.outcome || finalResult?.status;
 
       if (finalOutcome === 'failed' || finalOutcome === 'unexpected' ||
