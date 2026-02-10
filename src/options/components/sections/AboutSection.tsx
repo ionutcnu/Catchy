@@ -1,7 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const VERSION = '0.2.0';
+const VERSION = '1.0.0';
 
+/**
+ * AboutSection - Extension information and credits
+ *
+ * Displays extension version, creator information, feature list,
+ * and external links (GitHub, changelog, documentation).
+ */
 export function AboutSection() {
   return (
     <>

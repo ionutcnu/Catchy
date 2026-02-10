@@ -28,8 +28,17 @@ export default function PopupApp() {
   const loadSettings = useCallback(async () => {
     try {
       // Get current tab's hostname
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const hostname = tab.url ? new URL(tab.url).hostname : '';
+      // For testing: allow override via URL parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const testHostname = urlParams.get('testHostname');
+
+      let hostname: string;
+      if (testHostname) {
+        hostname = testHostname;
+      } else {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        hostname = tab.url ? new URL(tab.url).hostname : '';
+      }
       setCurrentHostname(hostname);
 
       // Load settings
@@ -264,8 +273,8 @@ export default function PopupApp() {
   }
 
   return (
-    <div className="w-[360px] min-h-[400px] p-4">
-      <div className="flex flex-col gap-4">
+    <div className="w-[360px] p-4">
+      <div className="flex flex-col gap-3">
         {/* Header */}
         <div className="text-center border-b pb-4 relative">
           <h1 className="text-2xl font-bold mb-1">{CONSTANTS.APP_TITLE}</h1>
@@ -322,7 +331,7 @@ export default function PopupApp() {
 
         {/* Main Card */}
         <Card>
-          <div className="p-6 space-y-6">
+          <div className="p-4 space-y-4">
             {/* Current Hostname */}
             {loading ? (
               <div className="text-center text-muted-foreground">{CONSTANTS.STATUS_LOADING}</div>
@@ -340,6 +349,7 @@ export default function PopupApp() {
                     <button
                       type="button"
                       onClick={handleToggleGlobal}
+                      data-testid="global-mode-toggle"
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         isGloballyEnabled ? 'bg-primary' : 'bg-muted-foreground'
                       }`}
@@ -385,11 +395,16 @@ export default function PopupApp() {
                       d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
                     />
                   </svg>
-                  <span className="text-sm font-mono truncate">{currentHostname || 'No site'}</span>
+                  <span className="text-sm font-mono truncate" data-testid="current-hostname">
+                    {currentHostname || 'No site'}
+                  </span>
                 </div>
 
                 {/* Status Indicator */}
-                <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50">
+                <div
+                  className="flex items-center gap-3 p-3 rounded-md bg-muted/50"
+                  data-testid="site-status"
+                >
                   <div className="relative flex h-3 w-3">
                     {isEnabledForSite && (
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -411,6 +426,7 @@ export default function PopupApp() {
                   className="w-full"
                   onClick={handleToggleSite}
                   disabled={!currentHostname}
+                  data-testid="site-toggle-button"
                 >
                   {isEnabledForSite ? CONSTANTS.BUTTON_DISABLE : CONSTANTS.BUTTON_ENABLE}
                 </Button>
@@ -462,11 +478,6 @@ export default function PopupApp() {
             )}
           </div>
         </Card>
-
-        {/* Footer */}
-        <div className="text-center text-xs text-muted-foreground border-t pt-4">
-          <span>{CONSTANTS.VERSION}</span>
-        </div>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import type { CatchyError, ErrorType } from '@/types';
 
 export class ErrorHistoryManager {
   private errors: CatchyError[] = [];
-  private maxSize = 200; // Default max size, will be loaded from settings
+  private maxSize = 25; // Default max size, will be loaded from settings
 
   /**
    * Set the maximum number of errors to store
@@ -252,8 +252,6 @@ export class ErrorHistoryManager {
       'console.error': 0,
       uncaught: 0,
       unhandledrejection: 0,
-      resource: 0,
-      network: 0,
     };
 
     let oldestTimestamp: number | null = null;

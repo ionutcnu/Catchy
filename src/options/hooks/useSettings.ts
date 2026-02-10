@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { type CatchySettings, DEFAULT_SETTINGS } from '@/types';
 
+/**
+ * useSettings - React hook for managing extension settings
+ *
+ * Provides settings state, save/load functionality, and dark mode toggle.
+ * Handles Chrome storage sync with optimistic updates and race condition
+ * prevention via save ID tracking. Validates maxHistorySize (5-50 range).
+ *
+ * @returns Settings state and control functions (saveSettings, toggleDarkMode)
+ */
 export function useSettings() {
   const [settings, setSettings] = useState<CatchySettings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
@@ -21,6 +30,15 @@ export function useSettings() {
           theme: {
             ...DEFAULT_SETTINGS.theme,
             ...result.settings.theme,
+            // Merge nested color objects explicitly
+            backgroundColors: {
+              ...DEFAULT_SETTINGS.theme.backgroundColors,
+              ...result.settings.theme?.backgroundColors,
+            },
+            textColors: {
+              ...DEFAULT_SETTINGS.theme.textColors,
+              ...result.settings.theme?.textColors,
+            },
           },
           errorTypes: {
             ...DEFAULT_SETTINGS.errorTypes,
@@ -68,15 +86,40 @@ export function useSettings() {
     };
   }, []);
 
-  // Save settings to Chrome storage
+  /**
+   * Save settings to Chrome sync storage with validation
+   *
+   * Validates maxHistorySize (5-50 range) before saving to prevent
+   * invalid values that could break error history functionality.
+   * Uses optimistic UI updates with rollback on error.
+   * Prevents race conditions via save ID tracking.
+   *
+   * @param newSettings - Settings object to save
+   */
   const saveSettings = (newSettings: CatchySettings) => {
+    // Validate maxHistorySize before saving (clamp to 5-50 range)
+    // Use defensive merge to preserve nested color objects
+    const validatedSettings: CatchySettings = {
+      ...newSettings,
+      theme: {
+        ...newSettings.theme,
+        maxHistorySize: Math.max(5, Math.min(50, newSettings.theme.maxHistorySize)),
+        backgroundColors: {
+          ...newSettings.theme.backgroundColors,
+        },
+        textColors: {
+          ...newSettings.theme.textColors,
+        },
+      },
+    };
+
     userEditedRef.current = true; // Mark that user has made edits
     const previousSettings = settings; // Preserve for rollback on error
     const currentSaveId = ++saveIdRef.current; // Increment save ID for this attempt
 
-    setSettings(newSettings); // Optimistically update UI
+    setSettings(validatedSettings); // Optimistically update UI
 
-    chrome.storage.sync.set({ settings: newSettings }, () => {
+    chrome.storage.sync.set({ settings: validatedSettings }, () => {
       if (chrome.runtime.lastError) {
         console.error('[Catchy Options] Failed to save settings:', chrome.runtime.lastError);
 
@@ -99,8 +142,14 @@ export function useSettings() {
     });
   };
 
-  // Toggle dark mode
+  /**
+   * Toggle dark mode preference
+   *
+   * Updates DOM class and persists preference to Chrome sync storage.
+   * Changes are broadcast to all extension contexts via storage listener.
+   */
   const toggleDarkMode = () => {
+    const previousDarkMode = isDarkMode;
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
 
@@ -111,13 +160,21 @@ export function useSettings() {
       document.documentElement.classList.remove('dark');
     }
 
-    // Save to chrome storage
+    // Save to chrome storage with rollback on failure
     chrome.storage.sync.set({ darkMode: newDarkMode }, () => {
       if (chrome.runtime.lastError) {
         console.error(
           '[Catchy Options] Failed to save dark mode preference:',
           chrome.runtime.lastError
         );
+
+        // Rollback state and DOM class on error
+        setIsDarkMode(previousDarkMode);
+        if (previousDarkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       }
     });
   };

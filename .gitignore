@@ -33,6 +33,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Test results
+test-results/
+playwright-report/
+playwright/.cache/
+test-output.json
+
 # OS
 Thumbs.db
 .DS_Store

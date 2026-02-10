@@ -614,13 +614,7 @@ export class ErrorDrawer {
     const filtersContainer = document.createElement('div');
     filtersContainer.className = 'catchy-drawer-filters';
 
-    const errorTypes: ErrorType[] = [
-      'console.error',
-      'uncaught',
-      'unhandledrejection',
-      'resource',
-      'network',
-    ];
+    const errorTypes: ErrorType[] = ['console.error', 'uncaught', 'unhandledrejection'];
 
     errorTypes.forEach((type) => {
       const filterBtn = document.createElement('button');

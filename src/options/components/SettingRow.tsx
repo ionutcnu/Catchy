@@ -5,6 +5,17 @@ interface SettingRowProps {
   onCheckedChange: (checked: boolean) => void;
 }
 
+/**
+ * SettingRow - Reusable checkbox row component for boolean settings
+ *
+ * Displays a labeled checkbox with title and description text.
+ * Used throughout settings UI for toggle options.
+ *
+ * @param title - Setting name displayed prominently
+ * @param description - Explanatory text below title
+ * @param checked - Current checkbox state
+ * @param onCheckedChange - Callback when checkbox is toggled
+ */
 export function SettingRow({ title, description, checked, onCheckedChange }: SettingRowProps) {
   return (
     <label className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 cursor-pointer transition-colors">

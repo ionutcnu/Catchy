@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+/**
+ * IgnoredErrorsSection - Manage permanently ignored errors
+ *
+ * Displays list of error signatures that have been permanently ignored
+ * and provides controls to remove individual entries or clear all.
+ * Loads from chrome.storage.local on mount.
+ */
 export function IgnoredErrorsSection() {
   const [ignoredErrors, setIgnoredErrors] = useState<string[]>([]);
 
