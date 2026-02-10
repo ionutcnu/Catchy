@@ -7,91 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.0.0] - 2026-02-10
+
+First public release on the Chrome Web Store.
+
 ### Added
-- Rules engine for filtering errors (regex/substring patterns)
-- "Ignore this" action on toast with prefilled rule suggestions
-- Performance guard for error storms (rate limiting)
-- Per-tab session store (ring buffer)
-- Presets: "Dev", "QA", "Demo" profiles
-- Import/Export settings as JSON
+- Ignore rules engine — filter errors by regex or substring, session or permanent
+- "Ignore this" action directly on toast with prefilled rule suggestions
+- Performance guard — rate limiting to handle error storms without flooding the UI
+- Playwright E2E test suite — 10 test files covering all major user flows
+- Backtick key (`` ` ``) as default keyboard shortcut to open the error history drawer
+- Per-tab session store with ring buffer
 
 ### Changed
+- Toast component overhauled — improved rendering, animations, and dismiss behavior
+- Error history drawer improvements — better scroll, grouping, and clear behavior
+- Popup redesigned for clearer per-site and global toggle controls
+- Default drawer shortcut changed from `Alt+E` to backtick (`` ` ``)
 
 ### Fixed
-
-### Removed
+- Extension initialization race condition on fast-loading pages
+- Settings propagation timing in content script
+- Flaky test reliability improvements
 
 ---
 
 ## [0.2.0] - 2026-01-30
 
 ### Changed
-- **Settings Page Overhaul**
-  - Refactored monolithic settings page into modular component architecture
-  - Added sidebar navigation with categorized sections
-  - Improved input controls (hybrid sliders, color pickers, keyboard shortcuts)
-  - Enhanced accessibility (ARIA labels, focus states, screen reader support)
-  - Better UX with specialized input components and preset values
+- Settings page refactored from a monolithic component into a modular section-based architecture
+- Added sidebar navigation with categorized sections
+- Improved input controls — hybrid sliders, color pickers, keyboard shortcut inputs
+- Enhanced accessibility — ARIA labels, focus states, screen reader support
 
 ### Fixed
-- Resolved all build errors (TypeScript and Biome lint)
-- Fixed 38 CodeRabbit review issues:
-  - Accessibility improvements (10 fixes)
-  - Type safety enhancements (3 fixes)
-  - Logic and race condition fixes (5 fixes)
-  - Code quality improvements (4 fixes)
-  - Privacy and deprecation updates (2 fixes)
-  - Architecture improvements (2 fixes)
-  - Critical validation fixes (2 fixes)
-  - UI/UX bug fixes (4 fixes)
-  - Consistency improvements (6 fixes)
-- Fixed keyboard shortcut validation (modifier-only shortcuts now rejected)
+- Resolved all TypeScript and Biome lint build errors
+- Fixed 38 CodeRabbit review issues across accessibility, type safety, logic, and UI/UX
+- Fixed keyboard shortcut validation — modifier-only shortcuts now rejected
 - Fixed dark mode hydration issue
 - Fixed shadow toggle checkbox behavior
 - Fixed preset button validation
-- Removed Google Fonts for privacy/GDPR compliance
+- Removed Google Fonts for privacy and GDPR compliance
 
 ---
 
 ## [0.1.0] - 2025-11-06
 
 ### Added
-- **Error Capturing**
-  - Console error interception (`console.error()`)
-  - Uncaught exception handling (`window.onerror`)
-  - Unhandled promise rejection tracking
-  - Resource error detection (images, scripts, etc.)
-  - Network error monitoring
-- **Error History & Management**
-  - Error history drawer with up to 200 errors per session
-  - Multiple access methods (keyboard shortcut, toast icon, pin icon)
-  - Customizable keyboard shortcut (default: Alt+E)
-  - Error grouping by message and stack
-  - Pin errors to persist after page refresh
-- **UI & Customization**
-  - Shadow DOM toast notifications
-  - Dark mode support
-  - Toast positioning (4 corner options)
-  - Toast sizing (small, medium, large, custom)
-  - Swipe to dismiss gesture
-  - Configurable auto-close timer
-  - Max toasts on screen control (1-10)
-- **Settings & Controls**
-  - Full React-based settings page with Tailwind CSS
-  - Global enable/disable toggle
-  - Per-site settings (enable/disable per domain)
-  - Selective error type toggles
-  - Recent features highlights section
-- **Branding**
-  - Extension icons (16x16, 32x32, 48x48, 128x128)
-  - Creator credits (Lonut & Wadalin)
-  - Comprehensive README with features and usage guide
-
-### Technical
-- Built with TypeScript + React + Tailwind CSS
-- Chrome Extension Manifest V3
-- Vite build system with Biome for linting
-- Shadow DOM for UI isolation
+- Console error interception (`console.error`)
+- Uncaught exception handling (`window.onerror`)
+- Unhandled promise rejection tracking
+- Resource error detection (images, scripts, stylesheets)
+- Network error monitoring
+- Shadow DOM toast notifications with swipe-to-dismiss
+- Error history drawer — up to 200 errors per session
+- Error grouping by message and stack trace
+- Pin errors to persist after page refresh
+- Toast positioning — 4 corner options
+- Toast sizing — small, medium, large, custom
+- Configurable auto-close timer
+- Max toasts on screen control (1–10)
+- Dark mode support
+- Global enable/disable toggle
+- Per-site settings — enable/disable per domain
+- Selective error type toggles
+- Full React settings page with Tailwind CSS
+- Extension icons — 16, 32, 48, 128px
 - Chrome storage sync for settings persistence
 
 ---
@@ -99,10 +82,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.1] - Initial Development
 
 ### Added
-- Basic error catching functionality
+- Basic error catching
 - Simple toast notifications
 - Minimal settings
-
----
-
-**Created by Lonut & Wadalin**

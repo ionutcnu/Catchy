@@ -1,0 +1,81 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in as much detail as possible.
+
+  - type: input
+    id: version
+    attributes:
+      label: Extension Version
+      description: Found in chrome://extensions next to Catchy
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: chrome_version
+    attributes:
+      label: Chrome Version
+      description: Found in chrome://settings/help
+      placeholder: e.g. 124.0.6367.91
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL where the bug occurs
+      description: The site or page where you encountered the issue (can be generic e.g. "any page")
+      placeholder: e.g. https://example.com
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug
+      placeholder: Describe what went wrong
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      placeholder: Describe the expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to reproduce the issue
+      placeholder: |
+        1. Go to ...
+        2. Trigger a console error by ...
+        3. See ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser Console Output
+      description: Any errors from DevTools console (F12 → Console)
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Screenshots, screen recordings, or anything else helpful
+    validations:
+      required: false
