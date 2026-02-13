@@ -216,7 +216,7 @@ async function launchChromium() {
 function startTestServer() {
   return new Promise((resolvePromise, reject) => {
     const server = createServer(async (req, res) => {
-      const testDir = resolve(projectRoot, "test");
+      const testDir = resolve(projectRoot, "test-pages");
       let filePath;
 
       if (req.url === "/" || req.url === "/index.html") {

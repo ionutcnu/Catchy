@@ -14,12 +14,14 @@ export function useSettings() {
   const [settings, setSettings] = useState<CatchySettings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const saveIdRef = useRef(0); // Track save attempts to prevent race conditions
   const userEditedRef = useRef(false); // Track if user has made edits
 
   // Load settings and theme preference on mount
   useEffect(() => {
+    // Apply dark class immediately to avoid flash of light mode
+    document.documentElement.classList.add('dark');
     chrome.storage.sync.get(['settings', 'darkMode'], (result) => {
       // Load settings only if user hasn't made edits
       if (!userEditedRef.current && result.settings) {
@@ -53,13 +55,12 @@ export function useSettings() {
       }
 
       // Always load dark mode preference (independent of settings)
-      if (result.darkMode !== undefined) {
-        setIsDarkMode(result.darkMode);
-        if (result.darkMode) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+      const darkMode = result.darkMode !== undefined ? result.darkMode : true;
+      setIsDarkMode(darkMode);
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
       }
     });
 

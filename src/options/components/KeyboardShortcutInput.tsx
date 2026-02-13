@@ -202,7 +202,6 @@ export function KeyboardShortcutInput({
 
       {conflict && (
         <p className="text-xs text-destructive flex items-center gap-1">
-          <span>⚠️</span>
           <span>{conflict}</span>
         </p>
       )}

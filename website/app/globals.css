@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0e1a;
+  --foreground: hsl(210, 40%, 98%);
+  --primary: hsl(217, 95%, 65%);
+  --primary-dim: hsl(217, 95%, 65%, 0.15);
+  --primary-border: hsl(217, 95%, 65%, 0.3);
+  --muted: hsl(215, 20%, 55%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), Inter, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+}

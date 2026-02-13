@@ -110,7 +110,6 @@ export function NumberInputWithPresets({
 
       {warningText && (
         <p id={warningTextId} className="text-xs text-orange-600 flex items-center gap-1">
-          <span>⚠️</span>
           <span>{warningText}</span>
         </p>
       )}

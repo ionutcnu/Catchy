@@ -61,6 +61,12 @@ export default defineConfig({
 
     // Target modern browsers (Chrome extensions use latest Chrome)
     target: "esnext",
+
+  },
+
+  // Strip console.log/warn in production builds
+  esbuild: {
+    drop: process.env.NODE_ENV !== 'development' ? ['console'] : [],
   },
 
   // Plugins

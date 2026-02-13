@@ -6,7 +6,7 @@ import { type CatchySettings, DEFAULT_SETTINGS } from '@/types';
 const manifest = chrome.runtime.getManifest();
 
 const CONSTANTS = {
-  APP_TITLE: '🎯 Catchy',
+  APP_TITLE: 'Catchy',
   APP_SUBTITLE: 'Console Error Tracker',
   STATUS_LOADING: 'Loading...',
   STATUS_ENABLED: 'Enabled for this site',
@@ -23,7 +23,7 @@ export default function PopupApp() {
   const [isGloballyEnabled, setIsGloballyEnabled] = useState(false);
   const [isEnabledForSite, setIsEnabledForSite] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -88,15 +88,16 @@ export default function PopupApp() {
 
   // Load dark mode preference on mount
   useEffect(() => {
+    // Apply dark class immediately to avoid flash of light mode
+    document.documentElement.classList.add('dark');
     // Load initial dark mode
     chrome.storage.sync.get(['darkMode'], (result) => {
-      if (result.darkMode !== undefined) {
-        setIsDarkMode(result.darkMode);
-        if (result.darkMode) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+      const darkMode = result.darkMode !== undefined ? result.darkMode : true;
+      setIsDarkMode(darkMode);
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
       }
     });
 
@@ -277,7 +278,15 @@ export default function PopupApp() {
       <div className="flex flex-col gap-3">
         {/* Header */}
         <div className="text-center border-b pb-4 relative">
-          <h1 className="text-2xl font-bold mb-1">{CONSTANTS.APP_TITLE}</h1>
+          <h1 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
+            <img
+              src={chrome.runtime.getURL('icons/icon-32.png')}
+              alt="Catchy"
+              width={24}
+              height={24}
+            />
+            {CONSTANTS.APP_TITLE}
+          </h1>
           <p className="text-sm text-muted-foreground">{CONSTANTS.APP_SUBTITLE}</p>
 
           {/* Dark Mode Toggle */}
@@ -341,7 +350,6 @@ export default function PopupApp() {
                 <div className="p-4 rounded-lg border bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">{isGloballyEnabled ? '🌍' : '🎯'}</span>
                       <span className="text-sm font-semibold">
                         {isGloballyEnabled ? 'Global Mode' : 'Opt-in Mode'}
                       </span>

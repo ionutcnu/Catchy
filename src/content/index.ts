@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS: CatchySettings = {
   theme: {
     position: 'bottom-right',
     maxToasts: 5,
-    autoCloseMs: 0,
+    autoCloseMs: 5000,
     swipeToDismiss: true,
     persistPinnedToasts: true,
     toastSize: 'medium',
@@ -436,6 +436,11 @@ async function loadSettings() {
       toastManager.setMaxToasts(settings.theme.maxToasts);
     }
 
+    // Apply auto-close setting
+    if (settings.theme?.autoCloseMs !== undefined) {
+      toastManager.setAutoCloseMs(settings.theme.autoCloseMs);
+    }
+
     // Apply toast size setting
     if (settings.theme?.toastSize) {
       toastManager.setToastSize(settings.theme.toastSize);
@@ -784,6 +789,11 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       console.log('[Catchy Content] Max toasts changed to:', newSettings.theme.maxToasts);
     }
 
+    // Update auto-close if changed
+    if (newSettings.theme?.autoCloseMs !== undefined) {
+      toastManager.setAutoCloseMs(newSettings.theme.autoCloseMs);
+    }
+
     // Update toast size if changed
     if (newSettings.theme?.toastSize) {
       toastManager.setToastSize(newSettings.theme.toastSize);
@@ -938,10 +948,11 @@ async function initializeExtension() {
     errorDrawer = new ErrorDrawer(shadowHost.shadowRoot, errorHistoryManager);
     errorDrawer.initialize();
 
-    // Check dark mode setting and apply to drawer
+    // Check dark mode setting and apply to drawer (default: dark)
     chrome.storage.sync.get(['darkMode'], (result) => {
-      if (result.darkMode && errorDrawer) {
-        errorDrawer.setDarkMode(result.darkMode);
+      const darkMode = result.darkMode !== undefined ? result.darkMode : true;
+      if (errorDrawer) {
+        errorDrawer.setDarkMode(darkMode);
       }
     });
 

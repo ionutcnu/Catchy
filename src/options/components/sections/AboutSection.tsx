@@ -58,8 +58,8 @@ export function AboutSection() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Version {VERSION} — real-time error toasts, error history drawer, ignore rules,
-            per-site controls, customizable keyboard shortcuts, dark mode, and Shadow DOM isolation.
+            Version {VERSION} — real-time error toasts, error history drawer, ignore rules, per-site
+            controls, customizable keyboard shortcuts, dark mode, and Shadow DOM isolation.
           </p>
           <a
             href="https://github.com/ionutcnu/Catchy/blob/main/CHANGELOG.md"

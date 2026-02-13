@@ -581,7 +581,7 @@ export class ErrorDrawer {
     const title = document.createElement('div');
     title.className = 'catchy-drawer-title';
     title.innerHTML = `
-      <span>📊 Error History</span>
+      <span>Error History</span>
       <button class="catchy-drawer-close" aria-label="Close drawer">×</button>
     `;
 
