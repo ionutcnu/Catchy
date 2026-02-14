@@ -792,6 +792,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     // Update auto-close if changed
     if (newSettings.theme?.autoCloseMs !== undefined) {
       toastManager.setAutoCloseMs(newSettings.theme.autoCloseMs);
+      console.log('[Catchy Content] Auto-close changed to:', newSettings.theme.autoCloseMs);
     }
 
     // Update toast size if changed

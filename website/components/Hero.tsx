@@ -69,7 +69,6 @@ export default function Hero() {
               height={625}
               unoptimized
               className="w-full"
-              onError={() => {}}
             />
           </motion.div>
         </div>

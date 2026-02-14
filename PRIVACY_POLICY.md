@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** February 2025
+**Last updated:** February 2026
 
 ## Overview
 

@@ -64,9 +64,11 @@ export default defineConfig({
 
   },
 
-  // Strip console.log/warn in production builds
+  // Strip debug logs in production, keep console.error and console.warn
   esbuild: {
-    drop: process.env.NODE_ENV !== 'development' ? ['console'] : [],
+    pure: process.env.NODE_ENV !== 'development'
+      ? ['console.log', 'console.debug', 'console.info']
+      : [],
   },
 
   // Plugins

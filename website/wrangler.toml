@@ -1,5 +1,5 @@
 name = "catchy-website"
-compatibility_date = "2025-01-01"
+compatibility_date = "2026-02-13"
 
-[site]
-bucket = "./out"
+[assets]
+directory = "./out"

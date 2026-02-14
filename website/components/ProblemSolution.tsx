@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 
-export default function WhatAndHow() {
+export default function ProblemSolution() {
   return (
     <section className="px-8 pb-10 pt-10">
       <div className="mx-auto max-w-7xl">

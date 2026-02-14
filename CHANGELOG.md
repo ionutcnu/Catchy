@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 First public release on the Chrome Web Store.
 
 ### Added
+
 - Ignore rules engine — filter errors by regex or substring, session or permanent
 - "Ignore this" action directly on toast with prefilled rule suggestions
 - Performance guard — rate limiting to handle error storms without flooding the UI
@@ -22,12 +23,14 @@ First public release on the Chrome Web Store.
 - Per-tab session store with ring buffer
 
 ### Changed
+
 - Toast component overhauled — improved rendering, animations, and dismiss behavior
 - Error history drawer improvements — better scroll, grouping, and clear behavior
 - Popup redesigned for clearer per-site and global toggle controls
 - Default drawer shortcut changed from `Alt+E` to backtick (`` ` ``)
 
 ### Fixed
+
 - Extension initialization race condition on fast-loading pages
 - Settings propagation timing in content script
 - Flaky test reliability improvements
@@ -37,12 +40,14 @@ First public release on the Chrome Web Store.
 ## [0.2.0] - 2026-01-30
 
 ### Changed
+
 - Settings page refactored from a monolithic component into a modular section-based architecture
 - Added sidebar navigation with categorized sections
 - Improved input controls — hybrid sliders, color pickers, keyboard shortcut inputs
 - Enhanced accessibility — ARIA labels, focus states, screen reader support
 
 ### Fixed
+
 - Resolved all TypeScript and Biome lint build errors
 - Fixed 38 CodeRabbit review issues across accessibility, type safety, logic, and UI/UX
 - Fixed keyboard shortcut validation — modifier-only shortcuts now rejected
@@ -56,6 +61,7 @@ First public release on the Chrome Web Store.
 ## [0.1.0] - 2025-11-06
 
 ### Added
+
 - Console error interception (`console.error`)
 - Uncaught exception handling (`window.onerror`)
 - Unhandled promise rejection tracking
@@ -82,6 +88,7 @@ First public release on the Chrome Web Store.
 ## [0.0.1] - Initial Development
 
 ### Added
+
 - Basic error catching
 - Simple toast notifications
 - Minimal settings

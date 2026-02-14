@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --mode development --watch",
-    "dev:playground": "node scripts/dev-playground.js",
     "build": "tsc && vite build && bun run copy-assets",
     "copy-assets": "node -e \"require('fs').cpSync('manifest.json', 'dist/manifest.json'); require('fs').cpSync('public/icons', 'dist/icons', {recursive: true})\"",
     "preview": "vite preview",

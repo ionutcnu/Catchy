@@ -75,7 +75,7 @@ bun run type-check   # TypeScript check only
 
 ## Project Structure
 
-```
+```text
 src/
 ├── content/           # Content script (error catching, toast rendering)
 │   ├── index.ts       # Entry point and coordinator
