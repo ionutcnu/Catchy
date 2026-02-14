@@ -22,13 +22,15 @@ Catchy surfaces JavaScript errors as visual, non-intrusive toasts directly on th
 
 - **Real-time toasts** — errors appear in under 250ms
 - **Smart grouping** — duplicate errors are grouped with a counter
-- **Ignore rules** — filter by regex or substring, session or permanent
+- **Error ignore** — dismiss errors from toast, session or permanently
 - **Per-site control** — enable/disable per domain from the popup
 - **Global toggle** — master on/off switch
 - **Shadow DOM isolation** — zero CSS conflicts with the host page
-- **Rate limiting** — handles error storms without flooding the UI
-- **Error history drawer** — scrollable panel with up to 200 errors per session
+- **Max toasts cap** — limits concurrent toasts to prevent UI flooding
+- **Error history drawer** — scrollable panel with up to 50 errors per session (configurable 5–50)
 - **Keyboard shortcut** — open drawer with the backtick key `` ` `` (customizable)
+- **Visual customization** — per-error-type colors, border radius, spacing, shadow, color presets
+- **Export history** — download error history as JSON or CSV
 - **Toast customization** — position, size, auto-close timer, dark mode
 - **Settings sync** — preferences sync across Chrome devices
 
@@ -96,10 +98,10 @@ manifest.json          # Extension manifest (MV3)
 
 1. **Content script** injects into every page and patches `console.error`, `window.onerror`, and `unhandledrejection`
 2. Errors are captured and passed to the **toast manager**, which renders them in a Shadow DOM container — isolated from the page's styles
-3. The **error history manager** stores up to 200 errors per session and powers the drawer panel
+3. The **error history manager** stores up to 50 errors per session and powers the drawer panel
 4. The **background service worker** manages settings, syncs state, and updates the toolbar badge
 5. The **popup** provides a quick per-site toggle and links to the options page
-6. The **options page** exposes full configuration: error types, toast appearance, ignore rules, keyboard shortcuts
+6. The **options page** exposes full configuration: error types, toast appearance, keyboard shortcuts
 
 ## Configuration
 
@@ -110,7 +112,7 @@ Open the options page via:
 Key settings:
 - Which error types to capture
 - Toast position, size, auto-close behavior
-- Ignore rules (regex or substring)
+- Error ignore (session or permanent)
 - Per-site enable/disable
 - Keyboard shortcut customization
 

@@ -15,12 +15,12 @@ First public release on the Chrome Web Store.
 
 ### Added
 
-- Ignore rules engine — filter errors by regex or substring, session or permanent
-- "Ignore this" action directly on toast with prefilled rule suggestions
-- Performance guard — rate limiting to handle error storms without flooding the UI
+- "Ignore this" button on toast — dismiss errors for current session or permanently
+- Max toasts cap — limits concurrent visible toasts to prevent UI flooding
 - Playwright E2E test suite — 10 test files covering all major user flows
 - Backtick key (`` ` ``) as default keyboard shortcut to open the error history drawer
-- Per-tab session store with ring buffer
+- Per-page session store with ring buffer
+- Ignored errors management page — view and remove permanently ignored errors
 
 ### Changed
 
@@ -65,11 +65,9 @@ First public release on the Chrome Web Store.
 - Console error interception (`console.error`)
 - Uncaught exception handling (`window.onerror`)
 - Unhandled promise rejection tracking
-- Resource error detection (images, scripts, stylesheets)
-- Network error monitoring
 - Shadow DOM toast notifications with swipe-to-dismiss
-- Error history drawer — up to 200 errors per session
-- Error grouping by message and stack trace
+- Error history drawer — up to 50 errors per session (configurable 5–50)
+- Error deduplication — grouped by type, message, file, and line with occurrence counter
 - Pin errors to persist after page refresh
 - Toast positioning — 4 corner options
 - Toast sizing — small, medium, large, custom
