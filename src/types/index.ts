@@ -138,7 +138,7 @@ export const DEFAULT_SETTINGS: CatchySettings = {
   theme: {
     position: 'bottom-right',
     maxToasts: 5,
-    autoCloseMs: 0,
+    autoCloseMs: 5000,
     swipeToDismiss: true,
     persistPinnedToasts: true,
     toastSize: 'medium',

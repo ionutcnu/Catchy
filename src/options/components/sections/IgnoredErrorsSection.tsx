@@ -136,7 +136,7 @@ export function IgnoredErrorsSection() {
 
           <div className="pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground">
-              💡 <strong>Tip:</strong> Ignored errors are stored persistently in local storage. They
+              <strong>Note:</strong> Ignored errors are stored persistently in local storage. They
               remain saved across browser restarts until manually removed.
             </p>
           </div>

@@ -54,7 +54,7 @@ export function HistorySection({ settings, onSave }: HistorySectionProps) {
           {/* Drawer Keyboard Shortcut */}
           <div className="pt-4 border-t border-border">
             <KeyboardShortcutInput
-              label="📊 Drawer Keyboard Shortcut"
+              label="Drawer Keyboard Shortcut"
               value={settings.theme.drawerShortcut || '`'}
               onChange={(value) => {
                 onSave({

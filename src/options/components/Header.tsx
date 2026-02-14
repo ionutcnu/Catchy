@@ -20,7 +20,15 @@ export function Header({ isDarkMode, onToggleDarkMode, saved, saveError }: Heade
   return (
     <>
       <div className="text-center mb-12 relative settings-header">
-        <h1 className="text-4xl font-bold mb-2">🎯 Catchy Settings</h1>
+        <h1 className="text-4xl font-bold mb-2 flex items-center justify-center gap-3">
+          <img
+            src={chrome.runtime.getURL('icons/icon-48.png')}
+            alt="Catchy"
+            width={40}
+            height={40}
+          />
+          Catchy Settings
+        </h1>
         <p className="text-muted-foreground">Configure your error catching preferences</p>
 
         {/* Dark Mode Toggle */}

@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --mode development --watch",
-    "dev:playground": "node scripts/dev-playground.js",
     "build": "tsc && vite build && bun run copy-assets",
     "copy-assets": "node -e \"require('fs').cpSync('manifest.json', 'dist/manifest.json'); require('fs').cpSync('public/icons', 'dist/icons', {recursive: true})\"",
     "preview": "vite preview",
@@ -34,7 +33,7 @@
     "typescript",
     "tailwind"
   ],
-  "author": "Lonut & Wadalin",
+  "author": "Lonut",
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "2.3.13",
@@ -57,7 +56,6 @@
     "vite-plugin-biome": "^1.0.12"
   },
   "dependencies": {
-    "@nova-mcp/mcp-nova": "^0.3.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   }

@@ -42,10 +42,10 @@ test-output.json
 # OS
 Thumbs.db
 .DS_Store
+nul
 
 # Extension packaging
 *.crx
 *.pem
 .claude
 .nova
-.

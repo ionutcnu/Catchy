@@ -1,0 +1,5 @@
+name = "catchy-website"
+compatibility_date = "2026-02-13"
+
+[assets]
+directory = "./out"

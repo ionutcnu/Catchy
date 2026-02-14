@@ -34,10 +34,6 @@ export function AboutSection() {
               <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-md font-medium text-sm">
                 Lonut
               </span>
-              <span className="text-muted-foreground">•</span>
-              <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-md font-medium text-sm">
-                Wadalin
-              </span>
             </div>
           </div>
 
@@ -62,9 +58,8 @@ export function AboutSection() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Version {VERSION} introduces error history drawer with up to 200 errors per session,
-            customizable keyboard shortcuts (Alt+E), dark mode support, per-site settings, selective
-            error type toggles, and swipe-to-dismiss gestures.
+            Version {VERSION} — real-time error toasts, error history drawer, ignore rules, per-site
+            controls, customizable keyboard shortcuts, dark mode, and Shadow DOM isolation.
           </p>
           <a
             href="https://github.com/ionutcnu/Catchy/blob/main/CHANGELOG.md"

@@ -149,7 +149,6 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
                   className="text-xs flex items-center gap-1"
                   data-testid="per-site-validation-success"
                 >
-                  <span className="text-green-600">✓</span>
                   <span className="text-green-600">
                     Will be saved as:{' '}
                     <code className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded font-mono">
@@ -162,7 +161,6 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
                   className="text-xs flex items-center gap-1"
                   data-testid="per-site-validation-error"
                 >
-                  <span className="text-destructive">✗</span>
                   <span className="text-destructive">
                     Invalid hostname format (must include a domain extension like .com)
                   </span>
@@ -174,7 +172,6 @@ export function PerSiteSection({ settings, onSave }: PerSiteSectionProps) {
                   className="text-xs flex items-center gap-1"
                   data-testid="per-site-duplicate-warning"
                 >
-                  <span className="text-orange-600">⚠️</span>
                   <span className="text-orange-600">This site is already configured</span>
                 </div>
               )}

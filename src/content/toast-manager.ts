@@ -15,6 +15,7 @@ export class ToastManager {
   private toasts: Map<string, Toast> = new Map();
   private nextId = 0;
   private maxToasts = 5; // Maximum number of visible toasts (dynamic, loaded from settings)
+  private autoCloseMs = 5000; // Auto-close delay in ms (0 = never)
   private position: ToastPosition = 'bottom-right'; // Default position
   private swipeToDismiss = true; // Default swipe-to-dismiss enabled
   private persistPinnedToasts = false; // Default persist pinned toasts disabled
@@ -620,6 +621,7 @@ export class ToastManager {
     // Create toast instance
     const toast = new Toast(toastData, {
       ...options,
+      autoCloseMs: options?.autoCloseMs !== undefined ? options.autoCloseMs : this.autoCloseMs,
       position: this.position, // Pass current position for swipe direction
       swipeToDismiss: this.swipeToDismiss, // Pass swipe-to-dismiss setting
       onIgnore: options?.onIgnore || this.globalOnIgnore, // Use provided callback or global fallback
@@ -915,6 +917,10 @@ export class ToastManager {
       console.log('[Catchy ToastManager] Max toasts changed:', this.maxToasts, '→', count);
     }
     this.maxToasts = count;
+  }
+
+  public setAutoCloseMs(ms: number): void {
+    this.autoCloseMs = ms;
   }
 
   /**
