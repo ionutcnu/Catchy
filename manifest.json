@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Catchy - Console Error Toaster",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Catch console errors with customizable toast notifications, error history, ignore controls, and per-site settings.",
 
   "icons": {
