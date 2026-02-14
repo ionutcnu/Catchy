@@ -23,7 +23,7 @@ Catchy operates entirely within your browser:
 
 1. The content script intercepts `console.error`, `window.onerror`, and unhandled promise rejections on the current page.
 2. Errors are displayed as toasts directly on that page.
-3. Your settings (enabled/disabled state, ignore rules, position preferences) are stored locally using Chrome's `chrome.storage.sync` API, which syncs across your own Chrome devices via your Google account. This sync is handled entirely by Chrome — no data passes through any server operated by Catchy.
+3. Your settings (enabled/disabled state, ignored error signatures, position preferences) are stored locally using Chrome's `chrome.storage.sync` API, which syncs across your own Chrome devices via your Google account. This sync is handled entirely by Chrome — no data passes through any server operated by Catchy.
 
 ## Permissions
 
@@ -31,8 +31,7 @@ The Extension requests the following Chrome permissions:
 
 | Permission | Reason |
 |------------|--------|
-| `storage` | Save your settings (enable/disable, ignore rules, position) |
-| `scripting` | Inject the error-catching content script into pages |
+| `storage` | Save your settings (enable/disable, ignored errors, position) |
 | `activeTab` | Read the current tab's domain for per-site controls |
 
 No permission is used to collect, transmit, or store data beyond your local browser.

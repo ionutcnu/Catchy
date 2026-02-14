@@ -46,10 +46,6 @@ export function useSettings() {
             ...DEFAULT_SETTINGS.errorTypes,
             ...result.settings.errorTypes,
           },
-          rateLimit: {
-            ...DEFAULT_SETTINGS.rateLimit,
-            ...result.settings.rateLimit,
-          },
         };
         setSettings(mergedSettings);
       }

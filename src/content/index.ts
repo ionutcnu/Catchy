@@ -11,7 +11,7 @@
  * 3. Shows toast notifications using Shadow DOM when errors are captured
  */
 
-import type { CatchyError, ErrorType, IgnoreRule, ToastPosition, ToastSize } from '@/types';
+import type { CatchyError, ErrorType, ToastPosition, ToastSize } from '@/types';
 import { ErrorDrawer } from './components/ErrorDrawer';
 import { errorHistoryManager } from './error-history-manager';
 import { toastManager } from './toast-manager';
@@ -29,7 +29,6 @@ interface CatchySettings {
     uncaught: boolean;
     unhandledRejection: boolean;
   };
-  ignoreRules?: IgnoreRule[]; // Optional - planned feature not yet implemented
   theme: {
     position: ToastPosition;
     maxToasts: number;
@@ -47,10 +46,6 @@ interface CatchySettings {
     shadow: boolean;
     spacing: number;
   };
-  rateLimit: {
-    maxPerInterval: number;
-    intervalMs: number;
-  };
 }
 
 // Inlined from src/types/index.ts:123 to avoid code-splitting issues with Chrome content scripts.
@@ -63,7 +58,6 @@ const DEFAULT_SETTINGS: CatchySettings = {
     uncaught: true,
     unhandledRejection: true,
   },
-  // ignoreRules: [], // Planned feature - not yet implemented
   theme: {
     position: 'bottom-right',
     maxToasts: 5,
@@ -80,10 +74,6 @@ const DEFAULT_SETTINGS: CatchySettings = {
     borderRadius: 8,
     shadow: true,
     spacing: 12,
-  },
-  rateLimit: {
-    maxPerInterval: 5,
-    intervalMs: 4000,
   },
 };
 
@@ -102,8 +92,6 @@ let enabledErrorTypes = {
   consoleError: true,
   uncaught: true,
   unhandledRejection: true,
-  resource: false,
-  network: false,
 };
 let drawerShortcut = DEFAULT_SETTINGS.theme.drawerShortcut; // Default keyboard shortcut for opening drawer
 // let ignoreButtonThreshold = 3; // Show ignore button after X error occurrences (unused)
@@ -346,8 +334,6 @@ async function loadSettings() {
         console: oldBg,
         uncaught: oldBg,
         rejection: oldBg,
-        resource: oldBg,
-        network: oldBg,
       };
       delete settings.theme.backgroundColor;
       needsMigration = true;
@@ -359,8 +345,6 @@ async function loadSettings() {
         console: oldText,
         uncaught: oldText,
         rejection: oldText,
-        resource: oldText,
-        network: oldText,
       };
       delete settings.theme.textColor;
       needsMigration = true;
@@ -562,8 +546,6 @@ function isErrorTypeAllowed(errorType: string): boolean {
     'console.error': 'consoleError',
     uncaught: 'uncaught',
     unhandledrejection: 'unhandledRejection',
-    resource: 'resource',
-    network: 'network',
   };
 
   const settingKey = typeMap[errorType];

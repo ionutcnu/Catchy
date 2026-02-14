@@ -59,9 +59,6 @@ export interface CatchySettings {
     unhandledRejection: boolean;
   };
 
-  // Ignore rules (planned feature - not yet implemented)
-  ignoreRules?: IgnoreRule[]; // List of rules to filter out errors (optional until implemented)
-
   // UI settings
   theme: {
     position: ToastPosition;
@@ -93,23 +90,6 @@ export interface CatchySettings {
     spacing: number; // Gap between toasts in pixels (4-32)
   };
 
-  // Rate limiting
-  rateLimit: {
-    maxPerInterval: number; // Max toasts per interval
-    intervalMs: number; // Interval in milliseconds
-  };
-}
-
-/**
- * Rule to ignore/filter certain errors
- */
-export interface IgnoreRule {
-  id: string; // Unique identifier
-  type: 'regex' | 'substring'; // How to match
-  scope: 'message' | 'stack' | 'url'; // What to match against
-  pattern: string; // The pattern to match
-  origin: 'global' | string; // Apply globally or to specific hostname
-  enabled: boolean; // Is this rule active?
 }
 
 /**
@@ -134,7 +114,6 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     uncaught: true,
     unhandledRejection: true,
   },
-  // ignoreRules: [], // Planned feature - not yet implemented
   theme: {
     position: 'bottom-right',
     maxToasts: 5,
@@ -163,10 +142,6 @@ export const DEFAULT_SETTINGS: CatchySettings = {
     borderRadius: 8, // 8px rounded corners
     shadow: true, // Drop shadow enabled
     spacing: 12, // 12px gap between toasts
-  },
-  rateLimit: {
-    maxPerInterval: 5,
-    intervalMs: 4000,
   },
 };
 
