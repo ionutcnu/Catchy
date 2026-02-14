@@ -89,7 +89,6 @@ export interface CatchySettings {
     shadow: boolean; // Enable/disable drop shadow
     spacing: number; // Gap between toasts in pixels (4-32)
   };
-
 }
 
 /**
