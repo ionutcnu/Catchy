@@ -1,14 +1,14 @@
 # Catchy - Console Error Toaster
 
-[![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/jkohplmikjpabfejhmlihpadbjkpjn?label=version)](https://chromewebstore.google.com/detail/catchy-console-error-toas/jkohplmikjpabfejhmlihpadbjkpjn)
-[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/jkohplmikjpabfejhmlihpadbjkpjn)](https://chromewebstore.google.com/detail/catchy-console-error-toas/jkohplmikjpabfejhmlihpadbjkpjn)
-[![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/jkohplmikjpabfejhmlihpadbjkpjn)](https://chromewebstore.google.com/detail/catchy-console-error-toas/jkohplmikjpabfejhmlihpadbjkpjn)
+[![Chrome Web Store Version](https://img.shields.io/chrome-web-store/v/jpkohplmikjpabfejhmlihpadbjlkpjn?label=version)](https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn)
+[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/jpkohplmikjpabfejhmlihpadbjlkpjn)](https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn)
+[![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/jpkohplmikjpabfejhmlihpadbjlkpjn)](https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn)
 [![GitHub Stars](https://img.shields.io/github/stars/ionutcnu/Catchy?style=flat)](https://github.com/ionutcnu/Catchy)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 Catchy surfaces JavaScript errors as visual, non-intrusive toasts directly on the page — so you never miss a console error again.
 
-**[Add to Chrome](https://chromewebstore.google.com/detail/catchy-console-error-toas/jkohplmikjpabfejhmlihpadbjkpjn)** · **[Report a Bug](https://github.com/ionutcnu/Catchy/issues/new/choose)** · **[Request a Feature](https://github.com/ionutcnu/Catchy/issues/new/choose)**
+**[Add to Chrome](https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn)** · **[Report a Bug](https://github.com/ionutcnu/Catchy/issues/new/choose)** · **[Request a Feature](https://github.com/ionutcnu/Catchy/issues/new/choose)**
 
 ---
 
@@ -36,7 +36,7 @@ Catchy surfaces JavaScript errors as visual, non-intrusive toasts directly on th
 
 ## Installation
 
-[Add from the Chrome Web Store](https://chromewebstore.google.com/detail/catchy-console-error-toas/jkohplmikjpabfejhmlihpadbjkpjn)
+[Add from the Chrome Web Store](https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn)
 
 Or load unpacked for development — see [Development Setup](#development-setup) below.
 

@@ -1,9 +1,8 @@
 import { Github } from "lucide-react";
 import Image from "next/image";
 
-// TODO: Replace with real 32-char extension ID once published on Chrome Web Store
 const CHROME_STORE_URL =
-  "https://chromewebstore.google.com/detail/catchy-console-error-toast/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+  "https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn";
 const GITHUB_URL = "https://github.com/ionutcnu/Catchy";
 
 export default function Footer() {
