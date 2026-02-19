@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Github } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const CHROME_STORE_URL =
   'https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn';
@@ -26,6 +26,7 @@ const SLIDES = [
 export default function Hero() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const next = useCallback(() => {
     setActive((i) => (i + 1) % SLIDES.length);
@@ -40,9 +41,8 @@ export default function Hero() {
   function pick(i: number) {
     setActive(i);
     setPaused(true);
-    // Resume auto-play after 8 s of inactivity
-    const t = setTimeout(() => setPaused(false), 8000);
-    return () => clearTimeout(t);
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    resumeTimer.current = setTimeout(() => setPaused(false), 8000);
   }
 
   const slide = SLIDES[active];
@@ -135,13 +135,16 @@ export default function Hero() {
             </div>
 
             {/* Thumbnail strip */}
-            <div className="grid grid-cols-6 gap-2">
+            <div
+              className="grid gap-2"
+              style={{ gridTemplateColumns: `repeat(${SLIDES.length}, minmax(0, 1fr))` }}
+            >
               {SLIDES.map((s, i) => (
                 <button
                   type="button"
                   key={s.src}
                   onClick={() => pick(i)}
-                  className={`group flex flex-col gap-1.5 rounded-md p-0 focus:outline-none`}
+                  className="group flex flex-col gap-1.5 rounded-md p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e1a]"
                 >
                   <div
                     className={`relative overflow-hidden rounded-md border bg-[#0d1120] transition-all duration-200 ${
