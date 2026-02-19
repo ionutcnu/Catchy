@@ -1,9 +1,9 @@
-import { Github } from "lucide-react";
-import Image from "next/image";
+import { Github } from 'lucide-react';
+import Image from 'next/image';
 
 const CHROME_STORE_URL =
-  "https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn";
-const GITHUB_URL = "https://github.com/ionutcnu/Catchy";
+  'https://chromewebstore.google.com/detail/catchy-console-error-toas/jpkohplmikjpabfejhmlihpadbjlkpjn';
+const GITHUB_URL = 'https://github.com/ionutcnu/Catchy';
 
 export default function Footer() {
   return (
@@ -58,6 +58,7 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* biome-ignore lint/performance/noImgElement: external badge URL, next/image doesn't support arbitrary external domains without config */}
             <img
               src="https://img.shields.io/github/v/release/ionutcnu/Catchy?style=flat-square&color=f97316&labelColor=1a1a1a"
               alt="version badge"
@@ -67,7 +68,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 text-center text-sm text-zinc-600">
-          Built by{" "}
+          Built by{' '}
           <a
             href="https://lonut.dev"
             target="_blank"

@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "deploy": "next build && bunx wrangler pages deploy out --project-name catchy"
+    "deploy": "next build && bunx wrangler pages deploy out --project-name catchy",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "check:fix": "biome check --write ."
   },
   "dependencies": {
     "framer-motion": "^12.34.0",
@@ -16,6 +20,7 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.3.13",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
