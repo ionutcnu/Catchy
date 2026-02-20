@@ -26,6 +26,7 @@ const SLIDES = [
 export default function Hero() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [barKey, setBarKey] = useState(0);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const next = useCallback(() => {
@@ -101,7 +102,7 @@ export default function Hero() {
           >
             {/* Main viewer */}
             <div className="relative w-full overflow-hidden rounded-xl border border-white/10 shadow-2xl shadow-black/60 bg-[#0d1120] aspect-[16/10]">
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" onExitComplete={() => setBarKey((k) => k + 1)}>
                 <motion.div
                   key={slide.src}
                   initial={{ opacity: 0 }}
@@ -120,11 +121,11 @@ export default function Hero() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Progress bar */}
+              {/* Progress bar — starts only after previous slide has fully exited */}
               {!paused && (
                 <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/5">
                   <motion.div
-                    key={`bar-${active}`}
+                    key={barKey}
                     className="h-full bg-blue-400/60"
                     initial={{ width: '0%' }}
                     animate={{ width: '100%' }}
